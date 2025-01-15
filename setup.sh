@@ -1,7 +1,16 @@
 #!/bin/bash
 
-python -m virtualenv --system-site-packages "../bali_final"
-source ../bali_final/bin/activate
+
+if [ -n "$1" ]; then
+    export BALI_ENV="$1"
+else
+    export BALI_ENV="./pyenv_inferbench"
+fi
+
+PWD_PREV=`pwd`
+
+python -m venv --system-site-packages ${BALI_ENV}
+source ${BALI_ENV}/bin/activate
 pip install --upgrade pip setuptools
 # # pip install rich
 pip install --upgrade pip
@@ -25,9 +34,6 @@ pip install flash-attn==2.3.1.post1 --no-build-isolation
 # # #FlashDecoding from Xformers on existing torch version
 # # # #vllm comes with xformers 0.0.23post1 --> used here to avoid dependency issues
 pip install fire
-cd acceleration_frameworks/external_scripts
-git clone git@github.com:facebookresearch/xformers.git
-
 
 #openLLM
 pip install --no-build-isolation openllm==0.4.44
@@ -41,3 +47,5 @@ pip install deepspeed-mii
 #apply the needed patches
 cd patches
 bash apply_patches.sh
+
+cd ${PWD_PREV}
