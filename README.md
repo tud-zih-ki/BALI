@@ -21,8 +21,8 @@ It allows a gine grained configuration of the inference, tailored to application
 
 ## Installation
 ```bash
-source setup.py
-source ../pyenv_inferbench/bin/activate
+source setup.sh
+source ./pyenv_inferbench/bin/activate
 ```
 
 
