@@ -7,6 +7,7 @@ from transformers import AutoTokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.utils import Counter
+from vllm.inputs import TokensPrompt
 
 from acceleration_frameworks.acceleration_framework import AccelerationFramework
 from vllm import SamplingParams
@@ -59,10 +60,12 @@ class VLLM_Async(AccelerationFramework):
         final_output = []
         if self.generate_from_token:
             for token_ids in tqdm(self.tokenized_data['input_ids'], desc='Samples', colour='CYAN'):
-                final_output.append(self.run_single_prompt(sampling_params, request_tracker, token_ids=token_ids))
+                task = asyncio.create_task(self.run_single_prompt(sampling_params, request_tracker, TokensPrompt(prompt_token_ids=token_ids.tolist())))
+                final_output.append(task)
         else:
             for prompt in tqdm(self.data, desc='Samples', colour='CYAN'):
-                final_output.append(self.run_single_prompt(sampling_params, request_tracker, prompt=prompt))
+                task = asyncio.create_task(self.run_single_prompt(sampling_params, request_tracker, prompt=prompt))
+                final_output.append(task)
 
         tokens = await asyncio.wait(final_output)
         tokens = [t.result() for t in tokens[0]]
@@ -70,8 +73,7 @@ class VLLM_Async(AccelerationFramework):
 
     async def run_single_prompt(self, sampling_params, request_tracker, prompt=None, token_ids=None):
         results_generator = self.model.generate(request_id=str(next(request_tracker)),
-                                                prompt=prompt if not self.generate_from_token else None,
-                                                prompt_token_ids=token_ids.tolist() if self.generate_from_token else None,
+                                                prompt=prompt,
                                                 sampling_params=sampling_params)
 
         async for request_output in results_generator:
