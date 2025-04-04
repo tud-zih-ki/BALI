@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cp openllm/* ../../${BALI_ENV}/lib/python3.*/site-packages/openllm
+cp openllm/* ${BALI_ENV}/lib/python3.*/site-packages/openllm

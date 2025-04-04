@@ -1,5 +1,6 @@
 import logging
 from itertools import chain
+import os
 
 import mii
 import tqdm
@@ -73,7 +74,7 @@ class Deepspeed(AccelerationFramework):
     def setup(self):
         # Initialize the MII pipeline     
         mii_configs = {"tensor_parallel": self.config['num_gpus'], "tokenizer": self.model_name_or_path,
-                       "profile_model_time": True}
+                       "profile_model_time": True, "torch_dist_port": 29500 + (os.getpid() % 10000)}
 
         self.pipe = mii.pipeline(
             self.model_name_or_path,
