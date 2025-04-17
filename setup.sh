@@ -25,17 +25,18 @@ pip install --no-build-isolation vllm==0.8.2
 
 pip install --no-build-isolation accelerate==1.6.0 llmlingua==0.2.2
 
-pip install --no-build-isolation openllm==0.6.23
-pip install --upgrade pydantic
-
 pip install --no-build-isolation flash-attn==2.7.4.post1
 
 pip install --no-build-isolation deepspeed==0.16.5 deepspeed-mii==0.3.3
 
 deactivate
 
-#apply the needed patches
-cd ${BALI_REPO}/patches
-bash apply_patches.sh
-
 cd ${BALI_REPO}
+
+gitignore_content="/.cache
+/.triton
+/__pycache__
+/acceleration_frameworks/__pycache__
+/pyenv_inferbench"
+
+echo "$gitignore_content" > .gitignore

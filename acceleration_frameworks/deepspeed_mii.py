@@ -73,8 +73,11 @@ class Deepspeed(AccelerationFramework):
 
     def setup(self):
         # Initialize the MII pipeline     
+        slurm_job_id = int(os.environ.get('SLURM_JOB_ID', 0))
+        job_id = slurm_job_id if slurm_job_id > 0 else os.getpid()
         mii_configs = {"tensor_parallel": self.config['num_gpus'], "tokenizer": self.model_name_or_path,
-                       "profile_model_time": True, "torch_dist_port": 29500 + (os.getpid() % 10000)}
+                       "profile_model_time": True, "torch_dist_port": 29500 + (job_id % 10000),
+                       "zmq_port_number": 25555 + (job_id % 10000)}
 
         self.pipe = mii.pipeline(
             self.model_name_or_path,
