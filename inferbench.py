@@ -22,7 +22,6 @@ frameworks_available = {'hf_accelerate': HFAccelerate,
                         'vllm': VLLM,
                         'vllm_async': VLLM_Async,
                         'llmlingua': LLMLingua,
-                        'openllm': OpenLLM,
                         'deepspeed': Deepspeed}
 
 

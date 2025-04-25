@@ -29,6 +29,8 @@ pip install --no-build-isolation flash-attn==2.7.4.post1
 
 pip install --no-build-isolation deepspeed==0.16.5 deepspeed-mii==0.3.3
 
+pip install flashinfer-python -i https://flashinfer.ai/whl/cu126/torch2.6/
+
 deactivate
 
 cd ${BALI_REPO}

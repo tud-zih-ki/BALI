@@ -49,7 +49,5 @@ def arguments(parser):
                         default={"return_tensors": "pt", "padding": "max_length", "truncation": True})
     parser.add_argument("--compression-config", type=dict, default={"model": "", "rate": 0.5},
                         help="Prompt Compression Configuration for LLMLingua")
-    parser.add_argument("--open-llm-backend", type=str, default="vllm",
-                        help="Backend used for OpenLLM Framework")
 
     return parser

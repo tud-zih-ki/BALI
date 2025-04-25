@@ -14,7 +14,6 @@ It allows a gine grained configuration of the inference, tailored to application
 |VLLM|https://docs.vllm.ai/en/latest/|
 |Huggingface Transformers (baseline)|https://huggingface.co/docs/transformers/index|
 |LLMLingua|https://github.com/microsoft/LLMLingua/tree/main|
-|OpenLLM|https://github.com/bentoml/OpenLLM|
 |DeepSpeed|https://github.com/microsoft/DeepSpeed-MII|
 
 
@@ -70,7 +69,6 @@ srun python inferbench.py --config-file 'configs/default_config_gpt2.json' --sav
   --tokenizer-init-config       Config Dictionary to initialize the tokenizer
   --tokenize-config             Config Dictionary for tokenize function parameters
   --compression-config          Prompt Compression Configuration for LLMLingua
-  --open-llm-backend            Backend used for OpenLLM Framework (vllm or torch)
 ```
 
 ## Citation
