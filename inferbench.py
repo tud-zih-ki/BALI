@@ -87,7 +87,7 @@ class InferBench:
                     data = self.prepare_data()
                     result = self.single_framework_run(framework, data)
                     self.clean_gpu_memory()
-                    logging.info(f'total time to run warm up repition for {framework}: {result["total_time"]}s')
+                    logging.info(f'total time to run warm up repetition for {framework}: {result["total_time"]}s')
 
                 logging.info("Starting actual Benchmark....")
                 for r in tqdm(range(self.config["repeats"]), desc='Repeat', colour='CYAN'):

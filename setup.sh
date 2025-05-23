@@ -1,19 +1,13 @@
 #!/bin/bash
 set -e
 
-BALI_REPO=`pwd`
-if [ -n "$1" ]; then
-    export BALI_ENV="$1"
-else
-    export BALI_ENV="${BALI_REPO}/pyenv_inferbench"
-fi
-
+export BALI_REPO=`pwd`
 export XDG_CACHE_HOME="${BALI_REPO}/.cache"
 export TRITON_CACHE_DIR="${BALI_REPO}/.triton"
 export BENTOML_HOME="${BALI_REPO}/.bentoml"
 
-python -m venv ${BALI_ENV}
-source ${BALI_ENV}/bin/activate
+python -m venv $BALI_REPO/pyenv_inferbench
+source $BALI_REPO/pyenv_inferbench/bin/activate
 
 pip install --upgrade pip setuptools
 pip install --upgrade pip
@@ -32,13 +26,3 @@ pip install --no-build-isolation deepspeed==0.16.5 deepspeed-mii==0.3.3
 pip install flashinfer-python -i https://flashinfer.ai/whl/cu126/torch2.6/
 
 deactivate
-
-cd ${BALI_REPO}
-
-gitignore_content="/.cache
-/.triton
-/__pycache__
-/acceleration_frameworks/__pycache__
-/pyenv_inferbench"
-
-echo "$gitignore_content" > .gitignore
