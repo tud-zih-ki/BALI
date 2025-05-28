@@ -7,7 +7,13 @@ from transformers import AutoTokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.utils import Counter
-from vllm.inputs import TextPrompt, TokensPrompt
+
+# Try to import new vLLM inputs, fall back to None if not available
+try:
+    from vllm.inputs import TextPrompt, TokensPrompt
+    HAS_VLLM_INPUTS = True
+except ImportError:
+    HAS_VLLM_INPUTS = False
 
 from acceleration_frameworks.acceleration_framework import AccelerationFramework
 from vllm import SamplingParams
@@ -70,13 +76,21 @@ class VLLM_Async(AccelerationFramework):
         return [t.outputs[0].token_ids for t in tokens]
 
     async def run_single_prompt(self, sampling_params, request_tracker, prompt=None, token_ids=None):
-        if self.generate_from_token:
-            inputs = TokensPrompt(prompt_token_ids=token_ids.tolist())
+        if HAS_VLLM_INPUTS:
+            # New vLLM version with inputs module
+            if self.generate_from_token:
+                inputs = TokensPrompt(prompt_token_ids=token_ids.tolist())
+            else:
+                inputs = TextPrompt(prompt=prompt)
+            results_generator = self.model.generate(request_id=str(next(request_tracker)),
+                                                    prompt=inputs,
+                                                    sampling_params=sampling_params)
         else:
-            inputs = TextPrompt(prompt=prompt)
-        results_generator = self.model.generate(request_id=str(next(request_tracker)),
-                                                prompt=inputs,
-                                                sampling_params=sampling_params)
+            # Old vLLM version without inputs module
+            results_generator = self.model.generate(request_id=str(next(request_tracker)),
+                                                    prompt=prompt if not self.generate_from_token else None,
+                                                    prompt_token_ids=token_ids.tolist() if self.generate_from_token else None,
+                                                    sampling_params=sampling_params)
 
         async for request_output in results_generator:
             final = request_output
