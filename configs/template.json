@@ -1,41 +1,40 @@
 {
-    "model_name": "${MODEL_NAME}",
-    "data": "data/prompts.txt",
-    "frameworks": [
-      "deepspeed",
-      "hf_accelerate",
-      "llmlingua",
-      "vllm",
-      "vllm_async"
-    ],
-    "repeats": 5,
-    "num_gpus": 1,
-    "input_len": "${INPUT_LEN}",
-    "output_len": "${OUTPUT_LEN}",
-    "generate_from_token": true,
-    "dtype": "float16",
-    "warm_up_reps": 2,
-    "tokenizer_init_config": {
-      "padding": "max_length",
-      "padding_side": "left",
-      "truncation": "only_first"
-    },
-    "tokenize_config": {
-      "return_tensors": "pt",
-      "padding": "max_length",
-      "truncation": true
-    },
-    "generation_config": {
-      "do_sample": true,
-      "max_token": 100,
-      "max_new_tokens": 100
-    },
-    "output_dir": "${BALI_REPO}/benchmark/results/${MODEL_NAME}_${INPUT_LEN}_${OUTPUT_LEN}",
-    "save-slurm-config": false,
-    "config-file": "config.json",
-    "compression_config":{
-      "model":"",
-      "rate": 0.5
-  
-    }
-  }  
+  "model_name": "",
+  "data": "data/prompts.txt",
+  "frameworks": [
+    "deepspeed",
+    "hf_accelerate",
+    "llmlingua",
+    "vllm",
+    "vllm_async"
+  ],
+  "repeats": 5,
+  "num_gpus": 1,
+  "input_len": 0,
+  "output_len": 0,
+  "generate_from_token": true,
+  "dtype": "float16",
+  "warm_up_reps": 2,
+  "tokenizer_init_config": {
+    "padding": "max_length",
+    "padding_side": "left",
+    "truncation": "only_first"
+  },
+  "tokenize_config": {
+    "return_tensors": "pt",
+    "padding": "max_length",
+    "truncation": true
+  },
+  "generation_config": {
+    "do_sample": true,
+    "max_token": 100,
+    "max_new_tokens": 100
+  },
+  "output_dir": "",
+  "save_slurm_config": false,
+  "config_file": "config.json",
+  "compression_config": {
+    "model": "",
+    "rate": 0.5
+  }
+}  
