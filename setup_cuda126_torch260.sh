@@ -1,11 +1,10 @@
 #!/bin/bash
 
-source env_new.sh
-python -m venv $BALI_REPO/pyenv_inferbench_new
-source $BALI_REPO/pyenv_inferbench_new/bin/activate
+source env_cuda126_torch260.sh
+python -m venv $BALI_REPO/pyenv_inferbench_cuda126_torch260
+source $BALI_REPO/pyenv_inferbench_cuda126_torch260/bin/activate
 
 pip install --upgrade pip setuptools
-pip install --upgrade pip
 
 # Core PyTorch 2.6.0 on CUDA 12.6
 pip install torch==2.6.0

@@ -189,7 +189,7 @@ def process_model(results_dir, model_name, frameworks, output_dir):
     plt.close(fig)
     print(f"  Saved heatmap")
 
-def create_heatmaps(software_setup='old'):
+def create_heatmaps(software_setup='cuda121_torch212'):
     """Create heatmaps for specified software setup."""
     results_dir = f'experiments_{software_setup}'
     
@@ -215,12 +215,12 @@ if __name__ == "__main__":
     
     if len(sys.argv) < 2:
         print("Usage: python heatmaps.py <software_setup>")
-        print("  software_setup: old|new")
+        print("  software_setup: cuda121_torch212|cuda126_torch260")
         sys.exit(1)
     
     software_setup = sys.argv[1]
-    if software_setup not in ['old', 'new']:
-        print("Error: Invalid software_setup. Use 'old' or 'new'")
+    if software_setup not in ['cuda121_torch212', 'cuda126_torch260']:
+        print("Error: Invalid software_setup. Use 'cuda121_torch212' or 'cuda126_torch260'")
         sys.exit(1)
     
     print(f"Generating heatmaps for {software_setup} software setup")

@@ -4,12 +4,12 @@ EXP_DIR=$1
 SOFTWARE_SETUP=$2
 export BALI_REPO=$(pwd)
 
-# Use old or new software setup
+# Use version-specific software setup
 source env_${SOFTWARE_SETUP}.sh
 PYENV_DIR="./pyenv_inferbench_${SOFTWARE_SETUP}"
 
 # Extract experiment info from directory structure
-# experiments_{old|new}/model_name/framework/input_size/output_size/
+# experiments_{cuda121_torch212|cuda126_torch260}/model_name/framework/input_size/output_size/
 exp_path_parts=($(echo "$EXP_DIR" | tr '/' ' '))
 model_name="${exp_path_parts[-4]}"
 framework="${exp_path_parts[-3]}"

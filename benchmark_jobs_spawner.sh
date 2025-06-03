@@ -1,6 +1,6 @@
 #!/bin/bash
 [[ $# -lt 2 ]] && { echo "Usage: $0 <software_setup> <run_mode>
-  software_setup: old|new
+  software_setup: cuda121_torch212|cuda126_torch260
   run_mode: incomplete|failed
 
 Available frameworks: deepspeed, hf_accelerate, llmlingua, vllm, vllm_async
@@ -10,11 +10,11 @@ Run modes:
   failed     - Rerun jobs for combinations where bench.log contains error
 
 Examples:
-  $0 old incomplete
-  $0 new failed"; exit 1; }
+  $0 cuda121_torch212 incomplete
+  $0 cuda126_torch260 failed"; exit 1; }
 
 SOFTWARE_SETUP=$1 RUN_MODE=$2
-[[ "$SOFTWARE_SETUP" != "old" && "$SOFTWARE_SETUP" != "new" ]] && { echo "Error: Invalid software setup parameter. Use 'old' or 'new'"; exit 1; }
+[[ "$SOFTWARE_SETUP" != "cuda121_torch212" && "$SOFTWARE_SETUP" != "cuda126_torch260" ]] && { echo "Error: Invalid software setup parameter. Use 'cuda121_torch212' or 'cuda126_torch260'"; exit 1; }
 [[ "$RUN_MODE" != "incomplete" && "$RUN_MODE" != "failed" ]] && { echo "Error: Invalid run mode parameter. Use 'incomplete' or 'failed'"; exit 1; }
 
 export BALI_REPO=$(pwd)

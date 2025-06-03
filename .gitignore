@@ -1,4 +1,6 @@
 **/.cache/
 **/.triton/
 **/__pycache__/
-**/pyenv_inferbench/
+**/pyenv_inferbench*
+experiments_*/
+heatmaps_*/
