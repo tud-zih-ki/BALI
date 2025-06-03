@@ -1,41 +1,54 @@
 #!/bin/bash
 
-source env_old.sh
-python -m venv $BALI_REPO/pyenv_inferbench_old
-source $BALI_REPO/pyenv_inferbench_old/bin/activate
+export HF_HOME=`pwd`/huggingface
+export BENTOML_HOME=`pwd`/bentoML
 
-pip install --upgrade pip setuptools
+if [ -n "$1" ]; then
+    export BALI_ENV="$1"
+else
+    export BALI_ENV="./pyenv_inferbench"
+fi
+
+PWD_PREV=`pwd`
+python -m venv --system-site-packages ${BALI_ENV}
+source ${BALI_ENV}/bin/activate
+
+# pip install rich
 pip install --upgrade pip
+pip install setuptools==69.5.1
 
-# Core PyTorch 2.1.2 on CUDA 12.1
+
+# # # # # #Baseline torch 2.1.2 on CUDA 12.1
 pip install torch==2.1.2 --index-url https://download.pytorch.org/whl/cu121
+pip install numpy transformers sentencepiece tqdm
 
-# Basic ML Dependencies with precise versions
-pip install numpy==1.26.4 sentencepiece==0.2.0 tqdm==4.67.1 
-
-# VLLM
+# # # # # #VLLM
 pip install vllm==0.3.3
+#LLM Lingua
+pip install --no-build-isolation llmlingua accelerate
 
-# LLM Lingua
-pip install --no-build-isolation llmlingua==0.2.2 accelerate==1.7.0
 
-# Flash Attention dependencies
-pip install ninja==1.11.1.4 packaging==25.0
+# # # # # #FlashDecoding from flashAttention
+pip install ninja packaging
 
-# Flash Attention
 pip install flash-attn==2.3.1.post1 --no-build-isolation
 
-# Utilities
-pip install pandas tabulate
+# # #FlashDecoding from Xformers on existing torch version
+# # # #vllm comes with xformers 0.0.23post1 --> used here to avoid dependency issues
+pip install fire
 
-# DeepSpeed
-pip install --no-build-isolation transformers==4.41.2 setuptools==69.5.1
+#openLLM
+pip install attrs==23.2.0
+pip install --no-build-isolation openllm==0.4.44
+pip install --upgrade pydantic
+
+# deepspeed
+pip install --no-build-isolation transformers==4.41.2
 pip install deepspeed==0.14.0
-pip install deepspeed-mii==0.2.3
+pip install --no-build-isolation deepspeed-mii
 
-# OpenLLM - to be fixed
-# pip install --no-build-isolation openllm==0.4.44
-# pip install --upgrade pydantic
+#apply the needed patches
+cd patches
+bash apply_patches.sh
 
-echo "Setup complete!" 
-deactivate
+cd ${PWD_PREV}
