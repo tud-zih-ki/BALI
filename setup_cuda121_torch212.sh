@@ -34,7 +34,7 @@ pip install --upgrade pydantic
 # deepspeed
 pip install --no-build-isolation transformers==4.41.2
 pip install deepspeed==0.14.0
-pip install --no-build-isolation deepspeed-mii
+pip install --no-build-isolation deepspeed-mii==0.2.3 --no-build-isolation
 
 # apply the needed patches
 cd patches
