@@ -41,7 +41,7 @@ def arguments(parser):
     parser.add_argument("--generate-from-token", action="store_true",
                         help="BALI setting, measures inference speed from token ids with fixed input length")
     parser.add_argument("--num-samples", type=int, default=128,
-                        help="Amount of Prompts to sample from data")
+                    help="Amount of Prompts to sample from data")
     parser.add_argument("--tokenizer-init-config", type=dict,
                         default={"padding": "max_length", "padding_side": "left", "truncation": "only_first"},
                         help="Config Dictionary to initialize the tokenizer")
@@ -49,5 +49,7 @@ def arguments(parser):
                         default={"return_tensors": "pt", "padding": "max_length", "truncation": True})
     parser.add_argument("--compression-config", type=dict, default={"model": "", "rate": 0.5},
                         help="Prompt Compression Configuration for LLMLingua")
-
+    parser.add_argument("--open-llm-backend", type=str, default="vllm",
+                        help="Backend used for OpenLLM Framework")
+    
     return parser

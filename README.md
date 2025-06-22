@@ -14,38 +14,31 @@ It allows a gine grained configuration of the inference, tailored to application
 |VLLM|https://docs.vllm.ai/en/latest/|
 |Huggingface Transformers (baseline)|https://huggingface.co/docs/transformers/index|
 |LLMLingua|https://github.com/microsoft/LLMLingua/tree/main|
+|OpenLLM|https://github.com/bentoml/OpenLLM|
 |DeepSpeed|https://github.com/microsoft/DeepSpeed-MII|
 
 
 
 ## Installation
 ```bash
-source setup.sh
-source ./pyenv_inferbench/bin/activate
+source setup_cuda121_torch212.sh
+source env_cuda121_torch212.sh
 ```
 
 
 ## Usage
 BALI can be used via a JSON config file, defining the intented parameters:
 ```bash
-python inferbench.py --config-file 'configs/default_config_gpt2.json'
+source pyenv_inferbench/bin/activate
+python inferbench.py --config-file 'configs/template.json'
 ```
 Additionally, all parameters are available via the command line interface:
 ```bash
 python inferbench.py --model-name 'gpt2' --data  'data/prompts.txt' --batch-size 1 --input_len 100 --output-len 100 
 ```
 Note, that the config is read and overwritten by the command line arguments.
-For Convenience, you might want to set the following environment Variables:
-```bash
-cd InferBench
-source ../pyenv_inferbench/bin/activate
 
-export HF_HOME=`pwd`/../huggingface
-export BENTOML_HOME=`pwd`/../bentoML
-export TOKENIZERS_PARALLELISM=false
-export HF_DATASETS_DISABLE_PROGRESS_BAR=1
-srun python inferbench.py --config-file 'configs/default_config_gpt2.json' --save-slurm-config
-```
+For Convenience, you might use `benchmark_jobs_spawner.sh` that will launch a wave of Slurm jobs, one for each model x input_size x output_size configuration, using `template.json` as base for configuration.
 
 ### Parameters
 ```
