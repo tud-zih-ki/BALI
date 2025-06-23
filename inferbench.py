@@ -15,15 +15,8 @@ from huggingface_hub import login
 from tabulate import tabulate
 from tqdm import tqdm
 
-from acceleration_frameworks import *
+from acceleration_frameworks import frameworks_available
 from cli import get_parser
-
-frameworks_available = {'hf_accelerate': HFAccelerate,
-                        'vllm': VLLM,
-                        'vllm_async': VLLM_Async,
-                        'llmlingua': LLMLingua,
-                        'openllm': OpenLLM,
-                        'deepspeed': Deepspeed}
 
 
 class InferBench:
@@ -78,7 +71,13 @@ class InferBench:
         result_dict = {}
 
         for framework in tqdm(self.config['frameworks'], desc='Framework', colour='CYAN'):
-            logging.info(f"Running accleration Framework {framework}...")
+            if framework not in frameworks_available:
+                logging.warning(
+                    f"Requested framework '{framework}' is not available in the current environment and will be skipped. "
+                    f"Available frameworks: {list(frameworks_available.keys())}")
+                continue
+
+            logging.info(f"Running acceleration framework {framework}…")
             result_dict[framework] = {}
 
             try:
@@ -88,9 +87,10 @@ class InferBench:
                     data = self.prepare_data()
                     result = self.single_framework_run(framework, data)
                     self.clean_gpu_memory()
-                    logging.info(f'total time to run warm up repition for {framework}: {result["total_time"]}s')
+                    logging.info(
+                        f'total time to run warm up repetition for {framework}: {result["total_time"]}s')
 
-                logging.info("Starting actual Benchmark....")
+                logging.info("Starting actual benchmark...")
                 for r in tqdm(range(self.config["repeats"]), desc='Repeat', colour='CYAN'):
                     data = self.prepare_data()
                     result = self.single_framework_run(framework, data)
@@ -99,7 +99,8 @@ class InferBench:
                     self.clean_gpu_memory()
             except Exception as e:
                 logging.error(
-                    f'Error for Framework {framework} or different error occured! Choose from the following frameworks: {frameworks_available.keys()}.\nError was: {e}')
+                    f'Error for Framework {framework} or different error occured! Choose from the following frameworks: '
+                    f"{list(frameworks_available.keys())}.\nError was: {e}")
                 tb = traceback.format_exc()
                 print(tb)
 

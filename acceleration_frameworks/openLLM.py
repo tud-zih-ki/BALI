@@ -2,7 +2,7 @@ import asyncio
 import logging
 from itertools import chain
 
-import openllm
+import acceleration_frameworks.openLLM as openLLM
 from transformers import AutoTokenizer
 
 from acceleration_frameworks.acceleration_framework import AccelerationFramework
@@ -25,7 +25,7 @@ class OpenLLM(AccelerationFramework):
         logging.info(f"Tokenized data shape:{self.tokenized_data['input_ids'].shape}")
 
     def setup(self):
-        llm = openllm.LLM(self.config['model_name'],
+        llm = openLLM.LLM(self.config['model_name'],
                           backend=self.config["open_llm_backend"],
                           max_new_tokens=self.config['output_len'],
                           min_length=self.config['output_len'],
