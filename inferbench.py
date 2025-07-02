@@ -37,7 +37,7 @@ class InferBench:
         # if out_dir exists_ add time_stamp to outdir
         if os.path.isdir(self.config['output_dir']):
             self.config['output_dir'] = '_'.join(
-                (self.config['output_dir'], datetime.now().strftime("%d-%m-%Y_%H-%M-%S")))
+                (self.config['output_dir'], datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
 
         if not os.path.exists(self.config['output_dir']):
             os.makedirs(self.config['output_dir'])
