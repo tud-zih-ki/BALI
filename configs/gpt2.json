@@ -1,0 +1,37 @@
+{
+  "model_name": "../../models/gpt2",
+  "data": "data/prompts.txt",
+  "frameworks": [
+    "hf_accelerate"
+  ],
+  "repeats": 2,
+  "num_gpus": 1,
+  "input_len": 100,
+  "output_len": 100,
+  "num_samples": 32,
+  "generate_from_token": true,
+  "dtype": "float",
+  "warm_up_reps": 1,
+  "tokenizer_init_config": {
+    "padding": "max_length",
+    "padding_side": "left",
+    "truncation": "only_first"
+  },
+  "tokenize_config": {
+    "return_tensors": "pt",
+    "padding": "max_length",
+    "truncation": true
+  },
+  "generation_config": {
+    "do_sample": true,
+    "max_token": 100,
+    "max_new_tokens": 100
+  },
+  "output_dir": "../results/bench_results",
+  "save-slurm-config": false,
+  "config-file": "default_config.json",
+  "compression_config": {
+    "model": "",
+    "rate": 0.5
+  }
+}
