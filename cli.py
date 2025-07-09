@@ -10,6 +10,8 @@ def get_parser():
 def arguments(parser):
     parser.add_argument("--model-name", type=str,
                         help="LLM to use for Benchmark run")
+    parser.add_argument("--model-trust-remote-code", type=bool, default=False,
+                        help="")
     parser.add_argument("--tokenizer", type=str, default=None,
                         help="Tokenizer to use, default is same as model")
     parser.add_argument("--frameworks", type=str, nargs='+', default=['hf_accelerate'],
@@ -43,10 +45,10 @@ def arguments(parser):
     parser.add_argument("--num-samples", type=int, default=128,
                     help="Amount of Prompts to sample from data")
     parser.add_argument("--tokenizer-init-config", type=dict,
-                        default={"padding": "max_length", "padding_side": "left", "truncation": "only_first"},
+                        default={"padding": "max_length", "padding_side": "left", "truncation": "only_first", "trust_remote_code": False},
                         help="Config Dictionary to initialize the tokenizer")
     parser.add_argument("--tokenize-config", type=dict,
-                        default={"return_tensors": "pt", "padding": "max_length", "truncation": True})
+                        default={"return_tensors": "pt", "padding": "max_length", "truncation": True, "trust_remote_code": False})
     parser.add_argument("--compression-config", type=dict, default={"model": "", "rate": 0.5},
                         help="Prompt Compression Configuration for LLMLingua")
     parser.add_argument("--open-llm-backend", type=str, default="vllm",

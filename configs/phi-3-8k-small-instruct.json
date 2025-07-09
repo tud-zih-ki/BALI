@@ -1,0 +1,38 @@
+{
+  "model_name": "../../models/Phi-3-small-8k-instruct",
+  "model_trust_remote_code": true,
+  "data": "data/prompts.txt",
+  "frameworks": [
+    "hf_accelerate"
+  ],
+  "repeats": 5,
+  "num_gpus": 1,
+  "input_len": 100,
+  "output_len": 100,
+  "generate_from_token": true,
+  "dtype": "bfloat16",
+  "warm_up_reps": 1,
+  "tokenizer_init_config": {
+    "padding": "max_length",
+    "padding_side": "left",
+    "truncation": "only_first",
+    "trust_remote_code": false
+  },
+  "tokenize_config": {
+    "return_tensors": "pt",
+    "padding": "max_length",
+    "truncation": true
+  },
+  "generation_config": {
+    "do_sample": true,
+    "max_token": 100,
+    "max_new_tokens": 100
+  },
+  "output_dir": "../results/bench_results",
+  "save-slurm-config": false,
+  "config-file": "default_config.json",
+  "compression_config":{
+    "model":"",
+    "rate": 0.5
+  }
+}
