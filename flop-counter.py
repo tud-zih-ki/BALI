@@ -1,9 +1,122 @@
 #!/usr/bin/env python3
 
-import json
 import logging
-import os
 from transformers import AutoConfig
+
+# Complexity of the Residual Stream matrix addidion
+def flops_residual(d_embed, d_input):
+    return d_embed*d_input
+
+# Complexity of the Layer Norm with optional biases
+def flops_layer_norm(d_embed, d_input, ln_bias):
+    result = 5 * d_embed * d_input + 2 * d_input
+    if ln_bias:
+        result += 2 * d_embed * d_input
+    return result
+
+# Complexity of a softmax function over an n-dimensional vector
+def flops_softmax(n):
+    return 3 * n - 1
+
+def flops_attn(d_embed, d_input, n_head, n_kvhead, causal, attn_bias):
+    inproj = (2 + 4 * n_kvhead / n_head) * d_embed * d_embed * d_input
+    outproj = 2 * d_embed * d_embed * d_input
+    
+    if not attn_bias:
+        inproj -= (n_head + 2 * n_kvhead) * d_embed / n_head * d_input
+        outproj -= d_embed * d_input
+
+    if causal:
+        qkt = d_embed * d_input * d_input + d_embed * d_input
+        softmax = n_head * (d_input * flops_softmax(d_input)) / 2
+        vout = d_embed*d_input*d_input
+    else:
+        qkt = 2*d_embed*d_input*d_input
+        softmax = n_head * (d_input * flops_softmax(d_input))
+        vout = 2*d_embed*d_input*d_input - d_embed*d_input
+    
+    result = inproj + qkt + softmax + vout + outproj
+    return result
+
+# Complexity of the MLP with different activations and GLU
+def flops_mlp(d_embed, d_ffn, d_input, act, mlp_bias):
+    # dict(activation: (complexity, is_glu))
+    activations = {"relu": (1, False), "gelu": (10, False), "swish": (4, False),
+                   "reglu": (1, True), "geglu": (10, True), "swiglu": (4, True)}
+    if act in activations:
+        act_cpx, glu = activations[act]
+    else:
+        act_cpx, glu = activations["relu"]
+
+    if glu:
+        result = 6 * d_ffn * d_embed * d_input + act_cpx * d_ffn * d_input
+        if not mlp_bias:
+            result -= 3 * d_ffn * d_input
+    else:
+        result = 4 * d_ffn * d_embed * d_input + act_cpx * d_ffn * d_input
+        if not mlp_bias:
+            result -= 2 * d_ffn * d_input
+
+    return result
+
+def flops_embedding(d_embed, d_input):
+    return d_embed * d_input
+
+def flops_decoding(d_embed, d_input, n_vocab):
+    return 2 * d_embed * d_input * n_vocab + 2 * d_input * n_vocab - d_input
+
+def flops_forward(d_input, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
+                     n_head, n_kvhead, n_vocab, n_layer, kvcache, type):
+    if type == "decoder":
+        if kvcache:
+            result = flops_embedding(d_embed, 1) \
+                     + n_layer * (2 * flops_residual(d_embed, 1) \
+                                  + 2 * flops_layer_norm(d_embed, 1, ln_bias) \
+                                  + flops_attn(d_embed, d_input, n_head, n_kvhead, False, attn_bias) / d_input \
+                                  + flops_mlp(d_embed, d_ffn, 1, activation, mlp_bias)) \
+                     + flops_decoding(d_embed, 1, n_vocab)
+        else:
+            result = flops_embedding(d_embed, d_input) \
+                     + n_layer * (2 * flops_residual(d_embed, d_input) \
+                                  + 2 * flops_layer_norm(d_embed, d_input, ln_bias) \
+                                  + flops_attn(d_embed, d_input, n_head, n_kvhead, True, attn_bias) \
+                                  + flops_mlp(d_embed, d_ffn, d_input, activation, mlp_bias)) \
+                     + flops_decoding(d_embed, d_input, n_vocab)
+
+    elif type == "encoder":
+        result = flops_embedding(d_embed, d_input) \
+                 + n_layer * (2 * flops_residual(d_embed, d_input) \
+                              + 2 * flops_layer_norm(d_embed, d_input, ln_bias) \
+                              + flops_attn(d_embed, d_input, n_head, n_kvhead, False, attn_bias) \
+                              + flops_mlp(d_embed, d_ffn, d_input, activation, mlp_bias))
+
+    else:
+        result = flops_embedding(d_embed, d_input) \
+                 + n_layer / 2 * (2 * flops_residual(d_embed, d_input) \
+                                  + 2 * flops_layer_norm(d_embed, d_input, ln_bias) \
+                                  + flops_attn(d_embed, d_input, n_head, n_kvhead, False, attn_bias)\
+                                  + flops_mlp(d_embed, d_ffn, d_input, activation, mlp_bias)) \
+                 + n_layer / 2 * (3 * flops_residual(d_embed, d_input) \
+                                  + 3 * flops_layer_norm(d_embed, d_input, ln_bias) \
+                                  + flops_attn(d_embed, d_input, n_head, n_kvhead, True, attn_bias) \
+                                  + flops_attn(d_embed, d_input, n_head, n_kvhead, False, attn_bias) \
+                                  + flops_mlp(d_embed, d_ffn, d_input, activation, mlp_bias)) \
+                 + flops_decoding(d_embed, d_input, n_vocab)
+
+    return result
+
+def total_flops(d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
+                   n_head, n_kvhead, n_vocab, n_layer, kvcache, type, prompt_len, output_len):
+    # Account for the Prefill phase (this doesn't affect non-caching types)
+    total_flops = flops_forward(prompt_len, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
+                                n_head, n_kvhead, n_vocab, n_layer, False, type)
+
+    # Count the remaining iterations
+    for d_input in range(prompt_len + 1, prompt_len + output_len):
+        total_flops += flops_forward(d_input, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
+                                     n_head, n_kvhead, n_vocab, n_layer, kvcache, type)
+
+    return total_flops
 
 class FlopCounter():
     def __init__(self, modelpath="../../models/gpt2"):
@@ -56,7 +169,8 @@ class FlopCounter():
     
     def infer_params(self, params):
         essential_params = ["d_embed", "n_head", "n_vocab", "n_layer"]
-        synonyms = [["geglu", "gegelu"]]
+        synonyms = [["geglu", "gegelu"],
+                    ["swish", "silu"]]
 
         for e in essential_params:
             if params[e] is None:
@@ -114,7 +228,7 @@ class FlopCounter():
                         "t5-small": {
                             "d_embed": 512, "d_ffn": 2048, "ln_bias": True, "attn_bias": False, "mlp_bias": False,
                             "activation": "relu", "n_head": 8, "n_kvhead": 8, "n_vocab": 32128, "n_layer": 12,
-                            "kvcache": True, "type": "encoder-decoder"},
+                            "kvcache": False, "type": "encoder-decoder"},
                         "teuken-7b-instruct-research-v0.4": {
                             "d_embed": 4096, "d_ffn": 13440, "ln_bias": True, "attn_bias": True, "mlp_bias": True,
                             "activation": "swiglu", "n_head": 32, "n_kvhead": 2, "n_vocab": 250680, "n_layer": 32,
@@ -176,11 +290,6 @@ class FlopCounter():
         # Step 3
         params = self.infer_params(params)
         return params
-    
-    def _calc_embed_cpx(self, D):
-        ...
-    
-    def _calc_residual()
     
     def calc_complexity(self, params):
         in_tokens = 100
