@@ -5,13 +5,15 @@ import torch
 from transformers import AutoTokenizer
 
 from timer import InferenceTimer
+from flops import FlopCounter
 
 
 class AccelerationFramework():
     def __init__(self, config, data, generate_from_token: bool = True):
-        self.timer = InferenceTimer()
-        self.data = data
         self.config = config
+        self.timer = InferenceTimer()
+        self.flops = FlopCounter(self.config['model_name'])
+        self.data = data
         self.generate_from_token = generate_from_token
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         if self.device == "cpu":
@@ -45,7 +47,10 @@ class AccelerationFramework():
             assert outputs.shape[1] == self.config[
                 'output_len'], f"Output length {outputs.shape[1]} of framework {self.__class__.__name__} does not match the configs output length!"
 
+        self.flops.calc_complexity(self.config["input_len"], self.config["output_len"])
+
         return {'total_time': self.timer.total_prediction_time(),
+                'total_flops' : self.flops.get_flops() / self.timer.total_prediction_time(),
                 'output_shape': outputs.shape,
                 'batch_size': self.config['batch_size'],
                 'generate_from_token': self.generate_from_token,

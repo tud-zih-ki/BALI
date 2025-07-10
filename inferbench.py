@@ -148,7 +148,7 @@ class InferBench:
 
         res = res.reindex(sorted(res.columns), axis=1).iloc[:, 4:]
         logging.info(
-            f"RESULTS\n{tabulate(res[['total_time_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
+            f"RESULTS\n{tabulate(res[['total_time_avg', 'total_flops_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
 
         res_path = os.path.join(self.config['output_dir'], 'benchmark_summary.csv')
         res.to_csv(res_path)

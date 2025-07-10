@@ -21,7 +21,7 @@ def flops_softmax(n):
 def flops_attn(d_embed, d_input, n_head, n_kvhead, causal, attn_bias):
     inproj = (2 + 4 * n_kvhead / n_head) * d_embed * d_embed * d_input
     outproj = 2 * d_embed * d_embed * d_input
-    
+
     if not attn_bias:
         inproj -= (n_head + 2 * n_kvhead) * d_embed / n_head * d_input
         outproj -= d_embed * d_input
@@ -34,7 +34,7 @@ def flops_attn(d_embed, d_input, n_head, n_kvhead, causal, attn_bias):
         qkt = 2*d_embed*d_input*d_input
         softmax = n_head * (d_input * flops_softmax(d_input))
         vout = 2*d_embed*d_input*d_input - d_embed*d_input
-    
+
     result = inproj + qkt + softmax + vout + outproj
     return result
 
@@ -121,7 +121,10 @@ def total_flops(d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
 class FlopCounter():
     def __init__(self, modelpath="../../models/gpt2"):
         self.modelpath = modelpath
-        self.params = self.get_params()
+        self.params = None
+        self.flops = None
+
+        self.fill_params()
 
     def parse_config(self, config, key):
         synonyms = [["n_inner", "ff_intermediate_size", "intermediate_size", "d_ff"],
@@ -130,7 +133,7 @@ class FlopCounter():
                     ["n_head", "num_heads", "num_attention_heads"],
                     ["n_layer", "num_layers", "num_hidden_layers"],
                     ["is_encoder", "is_decoder", "is_encoder_decoder"]]
-        
+
         keys_to_test = [key]
         for s in synonyms[:-1]:
             if key in s:
@@ -150,13 +153,13 @@ class FlopCounter():
         for k in keys_to_test:
             try:
                 out = config[k]
-                
+
                 # Convert any strings to lowercase and expect that to fail for ints or other
                 try:
                     out.lower()
                 except AttributeError:
                     pass
-                
+
                 # Exit the look on first match
                 if out is not None:
                     break
@@ -166,7 +169,7 @@ class FlopCounter():
                 continue
 
         return out
-    
+
     def infer_params(self, params):
         essential_params = ["d_embed", "n_head", "n_vocab", "n_layer"]
         synonyms = [["geglu", "gegelu"],
@@ -184,8 +187,7 @@ class FlopCounter():
         else:
             params["activation"] = "relu"
             logging.warning(f"Complexity: Assuming activation = {params["activation"]}")
-            
-        
+
         if params["d_ffn"] is None:
             if "glu" in params["activation"]:
                 # Assume T5-Style GLU with D x 8D/3 aspect ratio
@@ -201,17 +203,17 @@ class FlopCounter():
                 # Prefer to underestimate complexity
                 params[f"{layer}_bias"] = False
                 logging.warning(f"Complexity: Assuming {layer}_bias = {params[f"{layer}_bias"]}")
-        
+
         if params["n_kvhead"] is None:
             params["n_kvhead"] = params["n_head"]
             logging.warning(f"Complexity: Assuming n_kvhead = {params["n_kvhead"]} (No MQA/GQA)")
-        
+
         if params["type"] is None:
             params["type"] = "decoder"
             logging.warning(f"Complexity: Assuming type = {params["type"]}")
-        
+
         return params
-    
+
     def get_params_for_known_models(self, modelpath):
         known_params = {"bert-base-uncased": {
                             "d_embed": 768, "d_ffn": 3072, "ln_bias": True, "attn_bias": True, "mlp_bias": True,
@@ -241,16 +243,17 @@ class FlopCounter():
             print(f"Model {modelpath} not known :/")
             return False, {}
 
-    def get_params(self):
+    def fill_params(self):
         # 1. See if the model is known and if so, return its parameters.
         # 2. If not, then load the model config and parse as many parameters as possible
         # 3. Attempt to infer missing data from parsed fields
-        
+
         # Step 1
         got_updated, params = self.get_params_for_known_models(self.modelpath)
         if got_updated:
-            return params
-        
+            self.params = params
+            return
+
         # Step 2
         params = {
             # Dimensions
@@ -285,28 +288,25 @@ class FlopCounter():
         params["n_vocab"] = self.parse_config(config, "vocab_size")
         params["n_layer"] = self.parse_config(config, "n_layer")
         params["kvcache"] = self.parse_config(config, "use_cache")
-        params["type"] = self.parse_config(config, "is_decoder") # ???
-        
+        params["type"] = self.parse_config(config, "is_decoder")
+
         # Step 3
-        params = self.infer_params(params)
-        return params
-    
-    def calc_complexity(self, params):
-        in_tokens = 100
-        gen_tokens = 100
-        
-        if params["kvcache"]:
-            prefill = _calc_prefill()
-            kvcached = _calc_kvcached()
-        else:
-            iteration 
-            _
-        attn = _calc_attn_cpx()
-        
+        self.params = self.infer_params(params)
+
+    def calc_complexity(self, prompt_len, output_len):
+        p = self.params
+        self.flops = total_flops(p["d_embed"], p["d_ffn"], p["ln_bias"], p["attn_bias"], p["mlp_bias"],
+                                 p["activation"], p["n_head"], p["n_kvhead"], p["n_vocab"], p["n_layer"],
+                                 p["kvcache"], p["type"], prompt_len, output_len)
+
+    def get_flops(self):
+        return self.flops
 
 if __name__ == "__main__":
     print("Phi")
     fc = FlopCounter("../../models/Phi-3-small-8k-instruct")
+    fc.calc_complexity(100, 100)
+    print(fc.get_flops())
     print("GPT2")
     fc = FlopCounter("../../models/gpt2")
     print("BERT")
