@@ -16,6 +16,7 @@ class HFAccelerate(AccelerationFramework):
         if self.generate_from_token:
             self.tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'],
                                                            model_max_length=self.config['input_len'],
+                                                           trust_remote_code=self.config['trust_remote_code'],
                                                            **self.config['tokenizer_init_config'])
 
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -25,7 +26,7 @@ class HFAccelerate(AccelerationFramework):
 
         else:
             # take max seq len as input len per batch
-            tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'])
+            tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'], trust_remote_code=self.config['trust_remote_code'])
             tokenizer.pad_token = tokenizer.eos_token
             for b in self.data:
                 inputs = tokenizer(b, padding='longest', return_tensors='pt')
@@ -37,6 +38,7 @@ class HFAccelerate(AccelerationFramework):
 
     def setup(self):
         model = AutoModelForCausalLM.from_pretrained(self.config['model_name'],
+                                                     trust_remote_code=self.config['trust_remote_code'],
                                                      device_map="cuda",
                                                      max_length=self.config['output_len'] + self.config[
                                                          'input_len'] if self.generate_from_token else None)
