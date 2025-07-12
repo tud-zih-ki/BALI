@@ -1,5 +1,5 @@
 {
-  "model_name": "../../models/gpt2",
+  "model_name": "facebook/opt-125m",
   "tokenizer": null,
   "tokenizer_init_config": {
     "padding": "max_length",
@@ -9,7 +9,12 @@
   "trust_remote_code": false,
 
   "frameworks": [
-    "hf_accelerate"
+    "hf_accelerate",
+    "vllm",
+    "vllm_async",
+    "llmlingua",
+    "openllm",
+    "deepspeed"
   ],
   "tokenize_config": {
     "return_tensors": "pt",
@@ -18,17 +23,17 @@
     "return_token_type_ids": null
   },
   "data": "data/prompts.txt",
-  "num_samples": 32,
+  "num_samples": 128,
   "batch_size": 1,
   "input_len": 128,
   "output_len": 128,
-  "dtype": "float32",
+  "dtype": "float16",
   "warm_up_reps": 1,
-  "repeats": 2,
+  "repeats": 10,
   "num_gpus": 1,
   "generate_from_token": true,
 
-  "output_dir": "../results/gpt2",
+  "output_dir": "../results/opt-125m",
   "save-slurm-config": false,
   "loglevel": "info",
 

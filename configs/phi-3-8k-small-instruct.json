@@ -1,38 +1,40 @@
 {
   "model_name": "../../models/Phi-3-small-8k-instruct",
-  "data": "data/prompts.txt",
-  "frameworks": [
-    "hf_accelerate"
-  ],
-  "repeats": 5,
-  "num_gpus": 1,
-  "input_len": 100,
-  "output_len": 100,
-  "generate_from_token": true,
-  "dtype": "bfloat16",
-  "batch_size": 1,
-  "trust_remote_code": true,
-  "warm_up_reps": 1,
+  "tokenizer": null,
   "tokenizer_init_config": {
     "padding": "max_length",
     "padding_side": "left",
     "truncation": "only_first"
   },
+  "trust_remote_code": true,
+
+  "frameworks": [
+    "hf_accelerate"
+  ],
   "tokenize_config": {
     "return_tensors": "pt",
     "padding": "max_length",
-    "truncation": true
+    "truncation": true,
+    "return_token_type_ids": null
   },
-  "generation_config": {
-    "do_sample": true,
-    "max_token": 100,
-    "max_new_tokens": 100
-  },
-  "output_dir": "../results/bench_results",
+  "data": "data/prompts.txt",
+  "num_samples": 32,
+  "batch_size": 1,
+  "input_len": 128,
+  "output_len": 128,
+  "dtype": "bfloat16",
+  "warm_up_reps": 1,
+  "repeats": 2,
+  "num_gpus": 1,
+  "generate_from_token": true,
+
+  "output_dir": "../results/Phi-3-small-8k-instruct",
   "save-slurm-config": false,
-  "config-file": "default_config.json",
-  "compression_config":{
-    "model":"",
+  "loglevel": "info",
+
+  "compression_config": {
+    "model": "",
     "rate": 0.5
-  }
+  },
+  "open_llm_backend": "vllm"
 }
