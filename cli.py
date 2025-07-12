@@ -20,10 +20,12 @@ def arguments(parser):
                         help="Whether to trust remote code for models/tokenizers that would require it")
 
     # Benchmark configuration
-    parser.add_argument("--frameworks", type=str, nargs='+', default=['hf_accelerate', 'vllm', 'vllm_async', 'llmlingua', 'openllm', 'deepspeed'],
+    parser.add_argument("--frameworks", type=str, nargs='+',
+                        default=['hf_accelerate', 'vllm', 'vllm_async', 'llmlingua', 'openllm', 'deepspeed'],
                         help='Inference frameworks to benchmark. Select form hf_accelerate, vllm, vllm_async, llmlingua, openllm, deepspeed')
     parser.add_argument("--tokenize-config", type=dict,
-                        default={"return_tensors": "pt", "padding": "max_length", "truncation": True, "return_token_type_ids": None})
+                        default={"return_tensors": "pt", "padding": "max_length", "truncation": True, "return_token_type_ids": None},
+                        help="Config Dictionary for tokenize function parameters")
     parser.add_argument("--data", type=str, default='data/prompts.txt',
                         help="Path to the prompts text file")
     parser.add_argument("--num-samples", type=int, default=128,
@@ -48,7 +50,7 @@ def arguments(parser):
     # File I/O: config, results, loglevel
     parser.add_argument("--output-dir", type=str, default="../results/example",
                         help="Results directory")
-    parser.add_argument("--config-file", type=str, default="example.json",
+    parser.add_argument("--config-file", type=str, default="configs/example-gpt2.json",
                         help="Config file for running the benchmark.")
     parser.add_argument("--save-slurm-config", action="store_true",
                         help="Save SLURM environment variables")
