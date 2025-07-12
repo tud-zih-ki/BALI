@@ -51,7 +51,12 @@ class HFAccelerate(AccelerationFramework):
         if self.generate_from_token:
             assert self.tokenized_data is not None
             for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
-                result = self.model[0].generate(**batch, generation_config=self.model[1])
+                try:
+                    result = self.model[0].generate(**batch, generation_config=self.model[1])
+                except ValueError as e:
+                    if "The following `model_kwargs` are not used by the model: ['token_type_ids'] (note: typos in the generate arguments will also show up in this list)" in repr(e):
+                        logging.error("generate() failed due to wrong tokenizer configuration! Try adding 'return_token_type_ids': false to tokenize_config")
+                        exit(1)
                 batch_results = torch.cat((batch_results, result))
 
             return torch.split(batch_results, [self.config['input_len'], self.config['output_len']], dim=1)[1]

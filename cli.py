@@ -48,7 +48,7 @@ def arguments(parser):
                         default={"padding": "max_length", "padding_side": "left", "truncation": "only_first"},
                         help="Config Dictionary to initialize the tokenizer")
     parser.add_argument("--tokenize-config", type=dict,
-                        default={"return_tensors": "pt", "padding": "max_length", "truncation": True})
+                        default={"return_tensors": "pt", "padding": "max_length", "truncation": True, "return_token_type_ids": None})
     parser.add_argument("--compression-config", type=dict, default={"model": "", "rate": 0.5},
                         help="Prompt Compression Configuration for LLMLingua")
     parser.add_argument("--open-llm-backend", type=str, default="vllm",
