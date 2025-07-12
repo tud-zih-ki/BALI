@@ -12,6 +12,8 @@ def arguments(parser):
                         help="LLM to use for Benchmark run")
     parser.add_argument("--tokenizer", type=str, default=None,
                         help="Tokenizer to use, default is same as model")
+    parser.add_argument("--trust-remote-code", type=bool, default=False,
+                        help="Whether to trust remote code for models/tokenizers that would require it")
     parser.add_argument("--frameworks", type=str, nargs='+', default=['hf_accelerate'],
                         help='Inference accelerations frameworks to measure performance')
     parser.add_argument("--data", type=str, default='data/prompts_mini.txt',
