@@ -50,7 +50,7 @@ class AccelerationFramework():
         self.flops.calc_complexity(self.config["input_len"], self.config["output_len"])
 
         return {'total_time': self.timer.total_prediction_time(),
-                'total_flops' : self.flops.get_flops() / self.timer.total_prediction_time(),
+                'total_gflops' : 1e-9 * self.flops.get_flops() / self.timer.total_prediction_time(),
                 'output_shape': outputs.shape,
                 'batch_size': self.config['batch_size'],
                 'generate_from_token': self.generate_from_token,
