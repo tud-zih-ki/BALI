@@ -15,7 +15,7 @@
     "return_tensors": "pt",
     "padding": "max_length",
     "truncation": true,
-    "return_token_type_ids": null
+    "return_token_type_ids": false
   },
   "data": "data/prompts.txt",
   "num_samples": 32,
