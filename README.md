@@ -74,4 +74,13 @@ srun python inferbench.py --config-file 'configs/default_config_gpt2.json' --sav
 ```
 
 ## Citation
-TBA
+```
+@ARTICLE{jurkschat2025bali,
+  author={Jurkschat, Lena and Gattogi, Preetam and Vahdati, Sahar and Lehmann, Jens},
+  journal={IEEE Access}, 
+  title={BALI—A Benchmark for Accelerated Language Model Inference}, 
+  year={2025},
+  volume={13},
+  pages={98976-98989},
+  doi={10.1109/ACCESS.2025.3576898}}
+```
