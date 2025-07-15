@@ -9,8 +9,8 @@ from acceleration_frameworks.acceleration_framework import AccelerationFramework
 
 
 class LLMLingua(AccelerationFramework):
-    def __init__(self, config, data, generate_from_token: bool = True):
-        super(LLMLingua, self).__init__(config, data, generate_from_token)
+    def __init__(self, config, data, generate_from_token: bool = True, random_tokens = True):
+        super(LLMLingua, self).__init__(config, data, generate_from_token, random_tokens)
 
     def tokenize_data(self):
         logging.info('Note that for acceleration via prompt compression the given input len is always ignored.')

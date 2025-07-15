@@ -51,7 +51,6 @@ class AccelerationFramework():
                 'output_len'], f"Output length {outputs.shape[1]} of framework {self.__class__.__name__} does not match the configs output length!"
 
         return {'total_time': self.timer.total_prediction_time(),
-                'input_shape': self.tokenized_data[0].shape
                 'output_shape': outputs.shape,
                 'batch_size': self.config['batch_size'],
                 'generate_from_token': self.generate_from_token,
@@ -63,7 +62,6 @@ class AccelerationFramework():
                 'time_per_token': self.timer.time_per_token(outputs),
                 'token_per_sec': self.timer.token_per_sec(outputs),
                 'num_output_token': self.timer.num_output_token,
-                'num_input_token': self.tokenized_data[0].nelement()*int(self.config['num_samples']/self.config['batch_size']) if self.timer.tokenize_time else 'No pretokenization', 
                 'sequences/s': self.timer.seq_per_sec(outputs),
                 'start_timestamp': self.timer.start_time,
                 'end_timestamp': self.timer.end_time,
