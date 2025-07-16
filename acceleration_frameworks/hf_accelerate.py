@@ -1,11 +1,23 @@
 import logging
-
 import torch
 import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
+from transformers.generation import BaseStreamer
 
 from acceleration_frameworks.acceleration_framework import AccelerationFramework
 
+class TimerStreamer(BaseStreamer):
+    def __init__(self, timer):
+        self.timer = timer
+
+    def start(self):
+        self.timer.time_token_start(start_timing=False)
+
+    def put(self, value):
+        self.timer.time_token()
+
+    def end(self):
+        self.timer.time_token_final(end_timing=False)
 
 class HFAccelerate(AccelerationFramework):
     def __init__(self, config, data, flops, generate_from_token: bool = True):
@@ -48,10 +60,12 @@ class HFAccelerate(AccelerationFramework):
 
     def generate(self):
         batch_results = torch.Tensor().to(self.device)
+        streamer = TimerStreamer(self.timer)
         if self.generate_from_token:
             assert self.tokenized_data is not None
             for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
-                result = self.model[0].generate(**batch, generation_config=self.model[1])
+                streamer.start()
+                result = self.model[0].generate(**batch, generation_config=self.model[1], streamer=streamer)
                 batch_results = torch.cat((batch_results, result))
 
             return torch.split(batch_results, [self.config['input_len'], self.config['output_len']], dim=1)[1]
@@ -61,7 +75,8 @@ class HFAccelerate(AccelerationFramework):
             self.tokenize_data()
             # no ways of feeding prompts and using on the fly tokenization
             for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
-                result = self.model[0].generate(**batch, generation_config=self.model[1])
+                streamer.start()
+                result = self.model[0].generate(**batch, generation_config=self.model[1], streamer=streamer)
                 result = torch.split(result, [len(batch['input_ids'][0]), self.config['output_len']], dim=1)[1]
                 batch_results = torch.cat((batch_results, result))
 

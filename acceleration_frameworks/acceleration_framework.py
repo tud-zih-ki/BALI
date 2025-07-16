@@ -58,6 +58,7 @@ class AccelerationFramework():
                 'token_transfer_time': self.timer.token_transfer_time() if self.timer.tokenize_time else 'No pretokenization',
                 'generation_time': self.timer.generation_time(),
                 'time_per_token': self.timer.time_per_token(outputs),
+                'token_timestamps': self.timer.token_timings,
                 'token_per_sec': self.timer.token_per_sec(outputs),
                 'num_output_token': self.timer.num_output_token,
                 'sequences/s': self.timer.seq_per_sec(outputs)}

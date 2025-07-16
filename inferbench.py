@@ -9,6 +9,7 @@ import traceback
 from argparse import ArgumentParser
 from datetime import datetime
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
@@ -135,6 +136,17 @@ class InferBench:
         return framework_instance.forward()
 
     def evaluate_results(self, result_dict):
+        # don't litter the results file with individual timestamps but plot them instead
+        token_timestamps = {}
+        for framework in result_dict:
+            token_timestamps[framework] = np.empty((0, len(result_dict[framework][0]["token_timestamps"][0])))
+            for iteration in result_dict[framework]:
+                token_timestamps[framework] = np.concatenate((
+                        token_timestamps[framework],
+                        np.array(result_dict[framework][iteration].pop("token_timestamps"))
+                ))
+        self.plot_token_times(token_timestamps, outdir=self.config["output_dir"])
+
         df = pd.DataFrame(result_dict)
         res = pd.DataFrame()
         for c in df.columns:
@@ -155,6 +167,39 @@ class InferBench:
         res_path = os.path.join(self.config['output_dir'], 'benchmark_summary.csv')
         res.to_csv(res_path)
         logging.info(f"Saved Benchmark summary to {res_path}")
+
+    def plot_token_times(self, token_timestamps, outdir="."):
+        for framework in token_timestamps:
+            # Only HFAccelerate measures this as of now
+            if token_timestamps[framework].size == 0:
+                continue
+
+            # turn timestamps into latencies
+            token_timestamps[framework] = list(token_timestamps[framework])
+            for idx, t in enumerate(token_timestamps[framework]):
+                token_timestamps[framework][idx] = [t[i + 1] - t[i] for i in range(len(t) - 1)]
+
+            # regroup from timings of a run to timings for each token
+            token_timestamps[framework] = np.transpose(token_timestamps[framework])
+
+            xs = list(range(len(token_timestamps[framework])))
+            avgs = [np.average(t) for t in token_timestamps[framework]]
+            stdevs = [np.std(t) for t in token_timestamps[framework]]
+            plt.bar(xs, avgs, yerr=stdevs)
+
+            # error bars could also represent min and max (which i think is more informative
+            #   but doesn't align with other benchmark errors)
+            #   (better yet, 10th and 90th percentiles to account for outliers, but i could not be bothered)
+
+            # mins = [avgs[i] - np.min(t) for i, t in enumerate(token_timestamps[framework])]
+            # maxs = [np.max(t) - avgs[i] for i, t in enumerate(token_timestamps[framework])]
+            # plt.bar(xs, avgs, yerr=(mins, maxs))
+
+            plt.ylabel("Token latency in $s$")
+            plt.xlabel("Output Token No.")
+            plt.title(f"Token generation latencies for {framework}")
+            plt.savefig(os.path.join(outdir, f"token-timings-{framework}.png"), dpi=500)
+            plt.close()
 
     def save_results(self, result_dict: dict) -> None:
         """:

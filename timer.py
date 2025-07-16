@@ -11,6 +11,7 @@ class InferenceTimer:
         self.setup_time = None
         self.tokenize_time = None
         self.time_to_first_token = None
+        self.token_timings = [[]]
 
     def start_timer(self):
         self.start_time = time.perf_counter()
@@ -67,3 +68,26 @@ class InferenceTimer:
 
     def token_transfer_time(self):
         return self.tokenize_time - self.pure_tokenization
+
+    # these functions are meant to be used together to record individual token/batch latencies
+
+    # to be used before generate()
+    def time_token_start(self, start_timing=True):
+        # the empty list juggling is for compatibility with frameworks that don't log this
+        if start_timing:
+            if self.token_timings[-1] == []:
+                self.token_timings[-1].append(time.perf_counter())
+            else:
+                self.token_timings.append([time.perf_counter()])
+        else:
+            if not self.token_timings[-1] == []:
+                self.token_timings.append([])
+
+    # to be called back to after every generation step
+    def time_token(self):
+        self.token_timings[-1].append(time.perf_counter())
+
+    # the last timestamp. might be superfluous if frameworks other than hf_accelerate also don't need it
+    def time_token_final(self, end_timing=True):
+        if end_timing:
+            self.token_timings[-1].append(time.perf_counter())
