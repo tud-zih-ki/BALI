@@ -24,8 +24,8 @@ class VLLM_Async(AccelerationFramework):
     Using VLLMs asynchronous engine
     """
 
-    def __init__(self, config, data, generate_from_token: bool = True):
-        super(VLLM_Async, self).__init__(config, data, generate_from_token)
+    def __init__(self, config, data, flops, generate_from_token: bool = True):
+        super(VLLM_Async, self).__init__(config, data, flops, generate_from_token)
         self.data = list(chain.from_iterable(self.data))
 
     def tokenize_data(self):

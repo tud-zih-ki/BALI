@@ -8,8 +8,8 @@ from acceleration_frameworks.acceleration_framework import AccelerationFramework
 
 
 class HFAccelerate(AccelerationFramework):
-    def __init__(self, config, data, generate_from_token: bool = True):
-        super(HFAccelerate, self).__init__(config, data, generate_from_token)
+    def __init__(self, config, data, flops, generate_from_token: bool = True):
+        super(HFAccelerate, self).__init__(config, data, flops, generate_from_token)
 
     def tokenize_data(self):
         tokenized_batch = []

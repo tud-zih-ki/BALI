@@ -11,8 +11,8 @@ from acceleration_frameworks.acceleration_framework import AccelerationFramework
 
 
 class Deepspeed(AccelerationFramework):
-    def __init__(self, config, data, generate_from_token: bool = True):
-        super(Deepspeed, self).__init__(config, data, generate_from_token)
+    def __init__(self, config, data, flops, generate_from_token: bool = True):
+        super(Deepspeed, self).__init__(config, data, flops, generate_from_token)
         self.model_name_or_path = config['model_name']
 
     def tokenize_data(self):

@@ -19,6 +19,7 @@ from tqdm import tqdm
 
 from acceleration_frameworks import frameworks_available
 from cli import get_parser
+from flops import FlopCounter
 
 
 class InferBench:
@@ -63,6 +64,7 @@ class InferBench:
         logging.info('Starting Benchmark...')
 
         self.save_configs()
+        self.flops = FlopCounter(self.config['model_name'])
 
     def run_inference_benchmark(self) -> None:
         """
@@ -129,7 +131,7 @@ class InferBench:
         return samples
 
     def single_framework_run(self, framework, data):
-        framework_instance = frameworks_available[framework](self.config, data, self.config['generate_from_token'])
+        framework_instance = frameworks_available[framework](self.config, data, self.flops, self.config['generate_from_token'])
         return framework_instance.forward()
 
     def evaluate_results(self, result_dict):

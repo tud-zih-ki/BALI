@@ -5,7 +5,7 @@ from transformers import AutoConfig
 
 # Complexity of the Residual Stream matrix addidion
 def flops_residual(d_embed, d_input):
-    return d_embed*d_input
+    return d_embed * d_input
 
 # Complexity of the Layer Norm with optional biases
 def flops_layer_norm(d_embed, d_input, ln_bias):

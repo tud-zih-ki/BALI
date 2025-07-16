@@ -5,14 +5,13 @@ import torch
 from transformers import AutoTokenizer
 
 from timer import InferenceTimer
-from flops import FlopCounter
 
 
 class AccelerationFramework():
-    def __init__(self, config, data, generate_from_token: bool = True):
+    def __init__(self, config, data, flops, generate_from_token: bool = True):
         self.config = config
         self.timer = InferenceTimer()
-        self.flops = FlopCounter(self.config['model_name'])
+        self.flops = flops
         self.data = data
         self.generate_from_token = generate_from_token
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
