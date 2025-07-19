@@ -106,7 +106,7 @@ def flops_forward(d_input, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activat
     return result
 
 def total_flops(d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
-                   n_head, n_kvhead, n_vocab, n_layer, kvcache, type, prompt_len, output_len):
+                   n_head, n_kvhead, n_vocab, n_layer, kvcache, type, prompt_len, output_len, num_samples):
     # Account for the Prefill phase (this doesn't affect non-caching types)
     total_flops = flops_forward(prompt_len, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
                                 n_head, n_kvhead, n_vocab, n_layer, False, type)
@@ -116,11 +116,14 @@ def total_flops(d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
         total_flops += flops_forward(d_input, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
                                      n_head, n_kvhead, n_vocab, n_layer, kvcache, type)
 
+    # Account for batching and the number of batches, or in short, the number of total samples.
+    total_flops *= num_samples
+
     return total_flops
 
 class FlopCounter():
-    def __init__(self, modelpath="../../models/gpt2"):
-        self.modelpath = modelpath
+    def __init__(self, runconfig):
+        self.runconfig = runconfig
         self.params = None
         self.flops = None
 
@@ -249,7 +252,7 @@ class FlopCounter():
         # 3. Attempt to infer missing data from parsed fields
 
         # Step 1
-        got_updated, params = self.get_params_for_known_models(self.modelpath)
+        got_updated, params = self.get_params_for_known_models(self.runconfig["model_name"])
         if got_updated:
             self.params = params
             return
@@ -275,7 +278,7 @@ class FlopCounter():
             "type": None # cared for
         }
 
-        config = AutoConfig.from_pretrained(self.modelpath, trust_remote_code=True).to_dict()
+        config = AutoConfig.from_pretrained(self.runconfig["model_name"], trust_remote_code=True).to_dict()
 
         params["d_embed"] = self.parse_config(config, "n_embd")
         params["d_ffn"] = self.parse_config(config, "n_inner")
@@ -293,11 +296,12 @@ class FlopCounter():
         # Step 3
         self.params = self.infer_params(params)
 
-    def calc_complexity(self, prompt_len, output_len):
+    def calc_complexity(self):
         p = self.params
         self.flops = total_flops(p["d_embed"], p["d_ffn"], p["ln_bias"], p["attn_bias"], p["mlp_bias"],
                                  p["activation"], p["n_head"], p["n_kvhead"], p["n_vocab"], p["n_layer"],
-                                 p["kvcache"], p["type"], prompt_len, output_len)
+                                 p["kvcache"], p["type"],
+                                 self.runconfig["input_len"], self.runconfig["output_len"], self.runconfig["num_samples"])
 
     def get_flops(self):
         return self.flops

@@ -65,7 +65,7 @@ class InferBench:
         logging.info('Starting Benchmark...')
 
         self.save_configs()
-        self.flops = FlopCounter(self.config['model_name'])
+        self.flops = FlopCounter(self.config)
 
     def run_inference_benchmark(self) -> None:
         """
