@@ -145,7 +145,7 @@ class InferBench:
                         token_timestamps[framework],
                         np.array(result_dict[framework][iteration].pop("token_timestamps"))
                 ))
-        self.plot_token_times(token_timestamps, outdir=self.config["output_dir"])
+        self.plot_token_times(token_timestamps)
 
         df = pd.DataFrame(result_dict)
         res = pd.DataFrame()
@@ -168,7 +168,7 @@ class InferBench:
         res.to_csv(res_path)
         logging.info(f"Saved Benchmark summary to {res_path}")
 
-    def plot_token_times(self, token_timestamps, outdir="."):
+    def plot_token_times(self, token_timestamps):
         for framework in token_timestamps:
             # Only HFAccelerate measures this as of now
             if token_timestamps[framework].size == 0:
@@ -198,8 +198,9 @@ class InferBench:
             plt.ylabel("Token latency in $s$")
             plt.xlabel("Output Token No.")
             plt.title(f"Token generation latencies for {framework}")
-            plt.savefig(os.path.join(outdir, f"token-timings-{framework}.png"), dpi=500)
+            plt.savefig(os.path.join(self.config["output_dir"], f"token-timings-{framework}.png"), dpi=500)
             plt.close()
+            print(f"Saved token latencies diagram to: {os.path.join(self.config["output_dir"], f"token-timings-{framework}.png")}")
 
     def save_results(self, result_dict: dict) -> None:
         """:
