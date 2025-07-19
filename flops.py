@@ -41,8 +41,8 @@ def flops_attn(d_embed, d_input, n_head, n_kvhead, causal, attn_bias):
 # Complexity of the MLP with different activations and GLU
 def flops_mlp(d_embed, d_ffn, d_input, act, mlp_bias):
     # dict(activation: (complexity, is_glu))
-    activations = {"relu": (1, False), "gelu": (10, False), "swish": (4, False),
-                   "reglu": (1, True), "geglu": (10, True), "swiglu": (4, True)}
+    activations = {"relu": (1, False), "gelu": (9, False), "swish": (4, False),
+                   "reglu": (1, True), "geglu": (9, True), "swiglu": (4, True)}
     if act in activations:
         act_cpx, glu = activations[act]
     else:
