@@ -15,7 +15,7 @@ try:
 except ImportError:
     HAS_VLLM_INPUTS = False
 
-from acceleration_frameworks.acceleration_framework import AccelerationFramework
+from .acceleration_framework import AccelerationFramework
 from vllm import SamplingParams
 
 

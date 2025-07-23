@@ -49,7 +49,22 @@ def arguments(parser):
                         default={"return_tensors": "pt", "padding": "max_length", "truncation": True})
     parser.add_argument("--compression-config", type=dict, default={"model": "", "rate": 0.5},
                         help="Prompt Compression Configuration for LLMLingua")
-    parser.add_argument("--open-llm-backend", type=str, default="vllm",
-                        help="Backend used for OpenLLM Framework")
     
     return parser
+
+
+def main():
+    """Main entry point for the BALI CLI."""
+    try:
+        from .inferbench import InferBench
+    except ImportError:
+        # Fallback for when running as script
+        from inferbench import InferBench
+    
+    parser = get_parser()
+    benchmark = InferBench(parser)
+    benchmark.run_inference_benchmark()
+
+
+if __name__ == "__main__":
+    main()

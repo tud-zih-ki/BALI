@@ -1,21 +1,20 @@
 {
-  "model_name": "facebook/opt-125m",
+  "model_name": ["MiniLLM/MiniPLM-Qwen-500M"],
   "data": "data/prompts.txt",
   "frameworks": [
     "deepspeed",
     "hf_accelerate",
     "llmlingua",
     "vllm",
-    "vllm_async",
-    "openllm"
+    "vllm_async"
   ],
-  "repeats": 2,
+  "repeats": 1,
   "num_gpus": 1,
-  "input_len": 100,
-  "output_len": 100,
+  "input_len": [1, 2, 4, 8],
+  "output_len": [1, 2, 4, 8],
   "generate_from_token": true,
   "dtype": "float16",
-  "warm_up_reps":0,
+  "warm_up_reps": 0,
   "tokenizer_init_config": {
     "padding": "max_length",
     "padding_side": "left",
@@ -31,12 +30,11 @@
     "max_token": 100,
     "max_new_tokens": 100
   },
-  "output_dir": "../results/bench_results",
-  "save-slurm-config": false,
-  "config-file": "default_config.json",
-  "compression_config":{
-    "model":"",
+  "output_dir": "",
+  "save_slurm_config": false,
+  "config_file": "config.json",
+  "compression_config": {
+    "model": "",
     "rate": 0.5
-
   }
-}
+}  

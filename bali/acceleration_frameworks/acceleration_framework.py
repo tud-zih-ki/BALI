@@ -4,7 +4,7 @@ import logging
 import torch
 from transformers import AutoTokenizer
 
-from timer import InferenceTimer
+from ..timer import InferenceTimer
 
 
 class AccelerationFramework():
@@ -29,7 +29,7 @@ class AccelerationFramework():
             self.tokenize_data()
             self.timer.stop_tokenize_timer()
 
-        if type(self).__name__ in ["OpenLLM", "VLLM_Async"]:
+        if type(self).__name__ in ["VLLM_Async"]:
             outputs = asyncio.run(self.generate())
         else:
             outputs = self.generate()

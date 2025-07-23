@@ -10,13 +10,12 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import torch
-from deepspeed.accelerator import get_accelerator
 from huggingface_hub import login
 from tabulate import tabulate
 from tqdm import tqdm
 
-from acceleration_frameworks import frameworks_available
-from cli import get_parser
+from .acceleration_frameworks import frameworks_available
+from .cli import get_parser
 
 
 class InferBench:
@@ -37,7 +36,7 @@ class InferBench:
         # if out_dir exists_ add time_stamp to outdir
         if os.path.isdir(self.config['output_dir']):
             self.config['output_dir'] = '_'.join(
-                (self.config['output_dir'], datetime.now().strftime("%d-%m-%Y_%H-%M-%S")))
+                (self.config['output_dir'], datetime.now().strftime("%Y-%m-%d_%H-%M-%S")))
 
         if not os.path.exists(self.config['output_dir']):
             os.makedirs(self.config['output_dir'])
@@ -191,7 +190,6 @@ class InferBench:
     def clean_gpu_memory():
         logging.info(f'Memory allocated before clearing cache: {torch.cuda.memory_allocated()} bytes')
         torch.cuda.empty_cache()
-        get_accelerator().empty_cache()
         gc.collect()
         logging.info(f'Memory allocated after clearing cache: {torch.cuda.memory_allocated()} bytes')
 

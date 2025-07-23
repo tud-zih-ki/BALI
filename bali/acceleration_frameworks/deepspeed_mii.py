@@ -7,7 +7,7 @@ import tqdm
 from deepspeed.accelerator import get_accelerator
 from transformers import AutoTokenizer
 
-from acceleration_frameworks.acceleration_framework import AccelerationFramework
+from .acceleration_framework import AccelerationFramework
 
 
 class Deepspeed(AccelerationFramework):

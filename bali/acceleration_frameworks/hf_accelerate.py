@@ -4,7 +4,7 @@ import torch
 import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
-from acceleration_frameworks.acceleration_framework import AccelerationFramework
+from .acceleration_framework import AccelerationFramework
 
 
 class HFAccelerate(AccelerationFramework):
