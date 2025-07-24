@@ -1,0 +1,35 @@
+results_dir: ../results/bbh
+
+models:
+  mistralai/Mistral-7B-v0.1:
+    out_dir: mistral7b_answer
+    device: cuda:6
+  meta-llama/Meta-Llama-3.1-70B-Instruct:
+    out_dir: llama_3.1_70b_answer
+  CohereForAI/c4ai-command-r-plus:
+    out_dir: command_r_plus_answer
+  gpt-3.5-turbo-instruct:
+    out_dir: gpt35_answer
+  gpt-4o-2024-08-06:
+    out_dir: gpt_4o_answer
+  gpt-4o-mini-2024-07-18:
+    out_dir: gpt_4o_mini_answer
+
+scenarios:
+  - name: origin
+    load_from:
+      - bbh_cot_examples.json
+    load_key: prompt
+  - name: llmlingua2
+    load_from:
+      - compression_target200_bbh_cot_examples.json
+      - compression_target300_bbh_cot_examples.json
+    load_key: compressed_prompt
+  - name: llmlingua2_small
+    load_from:
+      - compression_target200_bbh_cot_examples.json
+      - compression_target300_bbh_cot_examples.json
+    load_key: compressed_prompt
+  - name: zero_shot
+    load_from:
+      - bbh_cot_examples.json

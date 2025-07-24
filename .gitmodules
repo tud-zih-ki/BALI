@@ -1,0 +1,3 @@
+[submodule "prompt_compression_benchmark/LLMLingua"]
+	path = prompt_compression_benchmark/LLMLingua
+	url = git@github.com:cornzz/LLMLingua.git
