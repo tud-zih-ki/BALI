@@ -16,6 +16,7 @@ class HFAccelerate(AccelerationFramework):
         if self.generate_from_token:
             self.tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'],
                                                            model_max_length=self.config['input_len'],
+                                                           trust_remote_code=self.config['trust_remote_code'],
                                                            **self.config['tokenizer_init_config'])
 
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -25,7 +26,7 @@ class HFAccelerate(AccelerationFramework):
 
         else:
             # take max seq len as input len per batch
-            tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'])
+            tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'], trust_remote_code=self.config['trust_remote_code'])
             tokenizer.pad_token = tokenizer.eos_token
             for b in self.data:
                 inputs = tokenizer(b, padding='longest', return_tensors='pt')
@@ -37,6 +38,7 @@ class HFAccelerate(AccelerationFramework):
 
     def setup(self):
         model = AutoModelForCausalLM.from_pretrained(self.config['model_name'],
+                                                     trust_remote_code=self.config['trust_remote_code'],
                                                      device_map="cuda",
                                                      max_length=self.config['output_len'] + self.config[
                                                          'input_len'] if self.generate_from_token else None)
@@ -49,7 +51,12 @@ class HFAccelerate(AccelerationFramework):
         if self.generate_from_token:
             assert self.tokenized_data is not None
             for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
-                result = self.model[0].generate(**batch, generation_config=self.model[1])
+                try:
+                    result = self.model[0].generate(**batch, generation_config=self.model[1])
+                except ValueError as e:
+                    if "The following `model_kwargs` are not used by the model: ['token_type_ids'] (note: typos in the generate arguments will also show up in this list)" in repr(e):
+                        logging.error("generate() failed due to wrong tokenizer configuration! Try adding 'return_token_type_ids': false to tokenize_config")
+                        exit(1)
                 batch_results = torch.cat((batch_results, result))
 
             return torch.split(batch_results, [self.config['input_len'], self.config['output_len']], dim=1)[1]

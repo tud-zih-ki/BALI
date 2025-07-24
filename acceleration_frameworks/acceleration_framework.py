@@ -76,6 +76,7 @@ class AccelerationFramework():
         if self.generate_from_token:
             self.tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'],
                                                            model_max_length=self.config['input_len'],
+                                                           trust_remote_code=self.config['trust_remote_code'],
                                                            **self.config['tokenizer_init_config'])
 
             if self.random_tokens:
@@ -93,7 +94,7 @@ class AccelerationFramework():
                     tokenized_batch.append(inputs)
         else:
             # take max seq len as input len per batch
-            tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'])
+            tokenizer = AutoTokenizer.from_pretrained(self.config['model_name'], trust_remote_code=self.config['trust_remote_code'])
             tokenizer.pad_token = tokenizer.eos_token
             for b in self.data:
                 inputs = tokenizer(b, padding='longest', return_tensors='pt')
