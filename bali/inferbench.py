@@ -12,7 +12,7 @@ import pandas as pd
 import torch
 from huggingface_hub import login
 from tabulate import tabulate
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from .acceleration_frameworks import frameworks_available
 from .cli import get_parser

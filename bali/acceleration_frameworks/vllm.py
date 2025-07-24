@@ -1,7 +1,7 @@
 import logging
 from itertools import chain
 
-import tqdm
+from tqdm.auto import tqdm
 
 from .acceleration_framework import AccelerationFramework
 from vllm import LLM, SamplingParams
@@ -36,13 +36,13 @@ class VLLM(AccelerationFramework):
         batch_results = []
         if self.generate_from_token:
             assert self.tokenized_data is not None
-            for token_batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
+            for token_batch in tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
                 outputs = self.model.generate(prompt_token_ids=[t.tolist() for t in token_batch['input_ids']],
                                               sampling_params=sampling_params, use_tqdm=False)
                 batch_results.append([o.outputs[0].token_ids for o in outputs])
         else:
             assert self.tokenized_data is None
-            for batch in tqdm.tqdm(self.data, desc='batch', colour='CYAN'):
+            for batch in tqdm(self.data, desc='batch', colour='CYAN'):
                 outputs = self.model.generate(prompts=batch, sampling_params=sampling_params, use_tqdm=False)
                 batch_results.append([o.outputs[0].token_ids for o in outputs])
                 logging.info(f'Prompt batch had {[len(o.prompt_token_ids) for o in outputs]} input tokens')

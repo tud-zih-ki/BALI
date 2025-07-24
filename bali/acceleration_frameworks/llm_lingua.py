@@ -1,7 +1,7 @@
 import logging
 
 import torch
-import tqdm
+from tqdm.auto import tqdm
 from llmlingua import PromptCompressor
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
@@ -45,7 +45,7 @@ class LLMLingua(AccelerationFramework):
             assert self.tokenized_data is None, f"Use tokenized data is false but data was still tokenized!"
             self.tokenize_data()
 
-        for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
+        for batch in tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
             result = self.model.generate(**batch)
             result = torch.split(result, [len(batch['input_ids'][0]), self.config['output_len']], dim=1)[1]
             batch_results = torch.cat((batch_results, result))
