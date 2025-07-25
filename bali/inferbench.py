@@ -46,12 +46,22 @@ class InferBench:
                             encoding='utf-8', level=args.loglevel.upper(),
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
+        l = logging.getLogger()
+        
+        if not l.hasHandlers():
+            l.setLevel(logging.INFO)
+            h = logging.StreamHandler()
+            f = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+            h.setFormatter(f)
+            logging.root.addHandler(h)
+            l.handler_set = True
+        
         # Handler for stdout logging in addition
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        logging.root.addHandler(handler)
+        #handler = logging.StreamHandler()
+        #handler.setLevel(logging.INFO)
+        #formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        #handler.setFormatter(formatter)
+        #logging.root.addHandler(handler)
 
         if 'hf_login_token' in self.config.keys():
             logging.info("Logging in to Huggingface Hub")
