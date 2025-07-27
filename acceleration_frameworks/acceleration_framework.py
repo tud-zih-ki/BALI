@@ -14,10 +14,10 @@ class AccelerationFramework():
         self.config = config
         self.generate_from_token = generate_from_token
         self.random_tokens = random_tokens
-        
-        if not self.generate_from_token:    
+
+        if not self.generate_from_token:
             assert self.random_tokens == False, "Random tokens can only be used if generate_from_token is True."
-        
+
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         if self.device == "cpu":
             raise ValueError("No GPU was found. Exiting...")
@@ -60,6 +60,7 @@ class AccelerationFramework():
                 'token_transfer_time': self.timer.token_transfer_time() if self.timer.tokenize_time else 'No pretokenization',
                 'generation_time': self.timer.generation_time(),
                 'time_per_token': self.timer.time_per_token(outputs),
+                'token_timestamps': self.timer.token_timings,
                 'token_per_sec': self.timer.token_per_sec(outputs),
                 'num_output_token': self.timer.num_output_token,
                 'sequences/s': self.timer.seq_per_sec(outputs),
@@ -82,7 +83,7 @@ class AccelerationFramework():
             if self.random_tokens:
                 logging.info("Using Random tokens as input data")
                 vocab_size = self.tokenizer.vocab_size
-                
+
                 assert self.config['num_samples']%self.config['batch_size']==0, "The number of samples is not divisible by the batch size!"
                 batches = int(self.config['num_samples']/self.config['batch_size'])
                 for b in range(batches):
