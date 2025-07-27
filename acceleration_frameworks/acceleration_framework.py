@@ -14,10 +14,10 @@ class AccelerationFramework():
         self.config = config
         self.generate_from_token = generate_from_token
         self.random_tokens = random_tokens
-        
-        if not self.generate_from_token:    
+
+        if not self.generate_from_token:
             assert self.random_tokens == False, "Random tokens can only be used if generate_from_token is True."
-        
+
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         if self.device == "cpu":
             raise ValueError("No GPU was found. Exiting...")

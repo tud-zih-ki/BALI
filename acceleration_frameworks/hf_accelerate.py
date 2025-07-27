@@ -1,5 +1,4 @@
 import logging
-
 import torch
 import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig

@@ -9,7 +9,7 @@ from vllm import LLM, SamplingParams
 
 class VLLM(AccelerationFramework):
     """
-    Created from vllm's own benchmark https://github.com/vllm-project/vllm/blob/ab406446691f289ef51d1abd8d1ff66760eda36f/benchmarks/benchmark_throughput.py#L61 
+    Created from vllm's own benchmark https://github.com/vllm-project/vllm/blob/ab406446691f289ef51d1abd8d1ff66760eda36f/benchmarks/benchmark_throughput.py#L61
     """
 
     def __init__(self, config, data, generate_from_token: bool = True, random_tokens = True):
@@ -24,7 +24,7 @@ class VLLM(AccelerationFramework):
             revision="main",
             tensor_parallel_size=self.config['num_gpus'],
             enforce_eager=False,
-            trust_remote_code=self.config["trust_remote_code"],
+            trust_remote_code=self.config['trust_remote_code'],
             max_model_len=self.config['input_len'] + self.config['output_len'] if self.generate_from_token else None)
         self.model = llm
 
