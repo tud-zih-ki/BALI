@@ -47,10 +47,10 @@ class AccelerationFramework():
                 'output_len'], f"Output length {outputs.shape[1]} of framework {self.__class__.__name__} does not match the configs output length!"
 
         self.flops.calc_complexity()
-        print(f"Achieved GFLOPS: {1e-9 * self.flops.get_flops() / self.timer.total_prediction_time():.2f}")
+        print(f"Achieved GFLOPS: {1e-9 * self.flops.get_flops() / self.timer.generation_time():.2f}")
 
         return {'total_time': self.timer.total_prediction_time(),
-                'total_gflops' : 1e-9 * self.flops.get_flops() / self.timer.total_prediction_time(),
+                'total_gflops' : 1e-9 * self.flops.get_flops() / self.timer.generation_time(),
                 'output_shape': outputs.shape,
                 'batch_size': self.config['batch_size'],
                 'generate_from_token': self.generate_from_token,
