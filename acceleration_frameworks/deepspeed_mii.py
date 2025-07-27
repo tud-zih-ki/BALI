@@ -11,8 +11,8 @@ from acceleration_frameworks.acceleration_framework import AccelerationFramework
 
 
 class Deepspeed(AccelerationFramework):
-    def __init__(self, config, data, flops, generate_from_token: bool = True):
-        super(Deepspeed, self).__init__(config, data, flops, generate_from_token)
+    def __init__(self, config, data, flops, generate_from_token: bool = True, random_tokens=True):
+        super(Deepspeed, self).__init__(config, data, flops, generate_from_token, random_tokens)
         self.model_name_or_path = config['model_name']
 
     def tokenize_data(self):
@@ -72,7 +72,7 @@ class Deepspeed(AccelerationFramework):
         self.mii_data = all_data
 
     def setup(self):
-        # Initialize the MII pipeline     
+        # Initialize the MII pipeline
         slurm_job_id = int(os.environ.get('SLURM_JOB_ID', 0))
         job_id = slurm_job_id if slurm_job_id > 0 else os.getpid()
         mii_configs = {"tensor_parallel": self.config['num_gpus'], "tokenizer": self.model_name_or_path,

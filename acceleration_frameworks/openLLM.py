@@ -11,8 +11,8 @@ batch_size = 1
 
 
 class OpenLLM(AccelerationFramework):
-    def __init__(self, config, data, flops, generate_from_token: bool = True):
-        super(OpenLLM, self).__init__(config, data, flops, generate_from_token)
+    def __init__(self, config, data, flops, generate_from_token: bool = True, random_tokens = True):
+        super(OpenLLM, self).__init__(config, data, flops, generate_from_token, random_tokens)
         self.data = list(chain.from_iterable(self.data))
 
     def tokenize_data(self):

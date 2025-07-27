@@ -9,11 +9,11 @@ from vllm import LLM, SamplingParams
 
 class VLLM(AccelerationFramework):
     """
-    Created from vllm's own benchmark https://github.com/vllm-project/vllm/blob/ab406446691f289ef51d1abd8d1ff66760eda36f/benchmarks/benchmark_throughput.py#L61 
+    Created from vllm's own benchmark https://github.com/vllm-project/vllm/blob/ab406446691f289ef51d1abd8d1ff66760eda36f/benchmarks/benchmark_throughput.py#L61
     """
 
-    def __init__(self, config, data, flops, generate_from_token: bool = True):
-        super(VLLM, self).__init__(config, data, flops, generate_from_token)
+    def __init__(self, config, data, flops, generate_from_token: bool = True, random_tokens = True):
+        super(VLLM, self).__init__(config, data, flops, generate_from_token, random_tokens)
 
     def setup(self):
         """

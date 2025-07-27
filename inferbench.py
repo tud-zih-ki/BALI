@@ -132,7 +132,7 @@ class InferBench:
         return samples
 
     def single_framework_run(self, framework, data):
-        framework_instance = frameworks_available[framework](self.config, data, self.flops, self.config['generate_from_token'])
+        framework_instance = frameworks_available[framework](self.config, data, self.flops, self.config['generate_from_token'], self.config['random_tokens'])
         return framework_instance.forward()
 
     def evaluate_results(self, result_dict):
