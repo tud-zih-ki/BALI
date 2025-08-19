@@ -20,8 +20,8 @@ class AccelerationFramework():
             assert self.random_tokens == False, "Random tokens can only be used if generate_from_token is True."
 
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        if self.device == "cpu":
-            raise ValueError("No GPU was found. Exiting...")
+        # if self.device == "cpu":
+        #     raise ValueError("No GPU was found. Exiting...")
         self.model = None
         self.tokenized_data = None
 

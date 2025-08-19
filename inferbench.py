@@ -23,6 +23,11 @@ from acceleration_frameworks import frameworks_available
 from cli import get_parser
 from flops import FlopCounter
 
+try:
+    import intel_extension_for_pytorch as ipex # required for AMX support
+except:
+    pass
+
 
 class InferBench:
     def __init__(self, parser: ArgumentParser):
@@ -301,11 +306,12 @@ class InferBench:
 
     @staticmethod
     def clean_gpu_memory():
-        logging.info(f'Memory allocated before clearing cache: {torch.cuda.memory_allocated()} bytes')
-        torch.cuda.empty_cache()
-        get_accelerator().empty_cache()
-        gc.collect()
-        logging.info(f'Memory allocated after clearing cache: {torch.cuda.memory_allocated()} bytes')
+        if torch.cuda.is_available():
+            logging.info(f'Memory allocated before clearing cache: {torch.cuda.memory_allocated()} bytes')
+            torch.cuda.empty_cache()
+            get_accelerator().empty_cache()
+            gc.collect()
+            logging.info(f'Memory allocated after clearing cache: {torch.cuda.memory_allocated()} bytes')
 
 
 if __name__ == '__main__':
