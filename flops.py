@@ -225,11 +225,11 @@ class FlopCounter():
                         "gpt2": {
                             "d_embed": 768, "d_ffn": 3072, "ln_bias": True, "attn_bias": True, "mlp_bias": True,
                             "activation": "gelu", "n_head": 12, "n_kvhead": 12, "n_vocab": 50257, "n_layer": 12,
-                            "kvcache": True, "type": "decoder"},
+                            "kvcache": self.runconfig["use_cache"], "type": "decoder"},
                         "phi-3-small-8k-instruct": {
                             "d_embed": 4096, "d_ffn": 14336, "ln_bias": True, "attn_bias": True, "mlp_bias": True,
                             "activation": "geglu", "n_head": 32, "n_kvhead": 8, "n_vocab": 100352, "n_layer": 32,
-                            "kvcache": True, "type": "decoder"},
+                            "kvcache": self.runconfig["use_cache"], "type": "decoder"},
                         "t5-small": {
                             "d_embed": 512, "d_ffn": 2048, "ln_bias": True, "attn_bias": False, "mlp_bias": False,
                             "activation": "relu", "n_head": 8, "n_kvhead": 8, "n_vocab": 32128, "n_layer": 12,
@@ -237,7 +237,7 @@ class FlopCounter():
                         "teuken-7b-instruct-research-v0.4": {
                             "d_embed": 4096, "d_ffn": 13440, "ln_bias": True, "attn_bias": True, "mlp_bias": True,
                             "activation": "swiglu", "n_head": 32, "n_kvhead": 2, "n_vocab": 250680, "n_layer": 32,
-                            "kvcache": True, "type": "decoder"}}
+                            "kvcache": self.runconfig["use_cache"], "type": "decoder"}}
 
         modelpath = modelpath.split("/")[-1].lower()
         if modelpath in known_params.keys():

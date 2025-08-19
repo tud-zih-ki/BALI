@@ -49,9 +49,23 @@ class HFAccelerate(AccelerationFramework):
         self.tokenized_data = [inputs.to(self.device) for inputs in tokenized_batch]
 
     def setup(self):
+        dtype = self.config["dtype"].lower()
+        if dtype in ["double", "float64", "fp64", "f64"]:
+            dtype = torch.double
+        elif dtype in ["single", "float", "float32", "fp32", "f32"]:
+            dtype = torch.float
+        elif dtype in ["half", "float16", "fp16", "f16"]:
+            dtype = torch.half
+        elif dtype in ["bfloat16", "bf16"]:
+            dtype = torch.bfloat16
+        else:
+            dtype = "auto"
+            print("Unknown dtype, defaulting to \"auto\"")
+
         model = AutoModelForCausalLM.from_pretrained(self.config['model_name'],
                                                      trust_remote_code=self.config['trust_remote_code'],
-                                                     device_map="cuda",
+                                                     device_map=self.device,
+                                                     torch_dtype=dtype,
                                                      max_length=self.config['output_len'] + self.config[
                                                          'input_len'] if self.generate_from_token else None)
 
@@ -66,7 +80,8 @@ class HFAccelerate(AccelerationFramework):
             for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
                 streamer.start()
                 try:
-                    result = self.model[0].generate(**batch, generation_config=self.model[1], streamer=streamer)
+                    result = self.model[0].generate(**batch, generation_config=self.model[1],
+                                                    streamer=streamer, use_cache=self.config["use_cache"])
                 except ValueError as e:
                     if "The following `model_kwargs` are not used by the model: ['token_type_ids'] (note: typos in the generate arguments will also show up in this list)" in repr(e):
                         logging.error("generate() failed due to wrong tokenizer configuration! Try adding 'return_token_type_ids': false to tokenize_config")

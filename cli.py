@@ -44,6 +44,8 @@ def arguments(parser):
                         help="Repetitions of inference benchmark per framework")
     parser.add_argument("--num-gpus", type=int, default=1,
                         help="Number of GPUs to use for benchmark")
+    parser.add_argument("--use-cache", type=bool, default=True,
+                        help="Whether to use KV-Caching (ineffective switch for vLLM)")
     parser.add_argument("--generate-from-token", action="store_true",
                         help="BALI setting, measures inference speed from token ids with fixed input length")
     parser.add_argument("--random-tokens", action="store_true",
