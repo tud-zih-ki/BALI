@@ -144,11 +144,12 @@ class InferBench:
         for framework in result_dict:
             token_timestamps[framework] = np.empty((0, len(result_dict[framework][0]["token_timestamps"][0])))
             for iteration in result_dict[framework]:
+                # FIXME list can also be concatenated using []+[], maybe that's easier
                 token_timestamps[framework] = np.concatenate((
                         token_timestamps[framework],
                         np.array(result_dict[framework][iteration].pop("token_timestamps"))
                 ))
-        self.plot_token_times(token_timestamps)
+        prefill_times, decode_times = self.plot_token_times(token_timestamps)
 
         df = pd.DataFrame(result_dict)
         res = pd.DataFrame()
@@ -164,6 +165,14 @@ class InferBench:
             res = pd.concat([res, avg.join(std, how='outer', on='framework', sort=True)])
 
         res = res.reindex(sorted(res.columns), axis=1).iloc[:, 4:]
+
+        # update results_dict. no regard for individual runs as of now, so it's not in r[framework][0]["prefill_time"]
+        for framework in prefill_times:
+            result_dict[framework]["prefill_time_median"] = prefill_times[framework]
+        # separate loops should maybe one framework only capture prefill, or the other way around, or whatever
+        for framework in decode_times:
+            result_dict[framework]["decode_times_median"] = decode_times[framework]
+
         logging.info(
             f"RESULTS\n{tabulate(res[['total_time_avg', 'total_gflops_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
 
@@ -174,6 +183,10 @@ class InferBench:
         logging.info(f"Saved Benchmark summary to {res_path} and {res_path_latest}.")
 
     def plot_token_times(self, token_timestamps):
+        # FIXME these statistics should probably be calculated elsewhere. for now it's easiest to get them here
+        prefill_times = {}
+        decode_times = {}
+
         for framework in token_timestamps:
             # Only HFAccelerate measures this as of now
             if token_timestamps[framework].size == 0:
@@ -182,10 +195,16 @@ class InferBench:
             # turn timestamps into latencies
             token_timestamps[framework] = list(token_timestamps[framework])
             for idx, t in enumerate(token_timestamps[framework]):
+                # FIXME this is to accomodate for hf-accelerate emitting the prompt as the first token
+                t = np.delete(t, 1)
                 token_timestamps[framework][idx] = [t[i + 1] - t[i] for i in range(len(t) - 1)]
 
             # regroup from timings of a run to timings for each token
             token_timestamps[framework] = np.transpose(token_timestamps[framework])
+
+            prefill_times[framework] = float(np.median(token_timestamps[framework][0]))
+            if len(token_timestamps[framework]) > 1:
+                decode_times[framework] = [np.median(t) for t in token_timestamps[framework][1:]]
 
             xs = list(range(len(token_timestamps[framework])))
             avgs = [np.average(t) for t in token_timestamps[framework]]
@@ -207,6 +226,8 @@ class InferBench:
             plt.savefig(os.path.join(self.config["output_dir"], "../latest/", f"token-timings-{framework}.png"), dpi=500)
             plt.close()
             print(f"Saved token latencies diagram to: {os.path.join(self.config['output_dir'], f'token-timings-{framework}.png')}")
+
+        return prefill_times, decode_times
 
     def save_results(self, result_dict: dict) -> None:
         """:

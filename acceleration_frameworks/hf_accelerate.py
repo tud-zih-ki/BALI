@@ -11,7 +11,7 @@ class TimerStreamer(BaseStreamer):
         self.timer = timer
 
     def start(self):
-        self.timer.time_token_start(start_timing=False)
+        self.timer.time_token_start(start_timing=True)
 
     def put(self, value):
         self.timer.time_token()

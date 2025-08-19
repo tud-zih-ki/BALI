@@ -108,16 +108,16 @@ def flops_forward(d_input, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activat
 def total_flops(d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
                    n_head, n_kvhead, n_vocab, n_layer, kvcache, type, prompt_len, output_len, num_samples):
     # Account for the Prefill phase (this doesn't affect non-caching types)
-    total_flops = flops_forward(prompt_len, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
-                                n_head, n_kvhead, n_vocab, n_layer, False, type)
+    total_flops = [flops_forward(prompt_len, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
+                                n_head, n_kvhead, n_vocab, n_layer, False, type)]
 
     # Count the remaining iterations
     for d_input in range(prompt_len + 1, prompt_len + output_len):
-        total_flops += flops_forward(d_input, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
-                                     n_head, n_kvhead, n_vocab, n_layer, kvcache, type)
+        total_flops.append(flops_forward(d_input, d_embed, d_ffn, ln_bias, attn_bias, mlp_bias, activation,
+                                     n_head, n_kvhead, n_vocab, n_layer, kvcache, type))
 
     # Account for batching and the number of batches, or in short, the number of total samples.
-    total_flops *= num_samples
+    total_flops = [f * num_samples for f in total_flops]
 
     return total_flops
 
@@ -305,6 +305,9 @@ class FlopCounter():
 
     def get_flops(self):
         return self.flops
+
+    def get_total_flops(self):
+        return sum(self.flops)
 
 if __name__ == "__main__":
     print("Phi")
