@@ -2,6 +2,6 @@
 **/.triton/
 **/__pycache__/
 **/pyenv_inferbench*
+**/*venv/
 experiments_*/
 heatmaps_*/
-balivenv/
