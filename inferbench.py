@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy as np
 import pandas as pd
 import torch
