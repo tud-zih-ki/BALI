@@ -19,11 +19,13 @@ class VLLM(AccelerationFramework):
         """
         Loading the model or model pipeline respectively,defined in subclass
         """
+        # maybe -- depending on version -- add disable_log_stats=False for token logging
         llm = LLM(
             model=self.config['model_name'],
             revision="main",
             tensor_parallel_size=self.config['num_gpus'],
             enforce_eager=False,
+            enable_prefix_caching=False,
             trust_remote_code=self.config['trust_remote_code'],
             max_model_len=self.config['input_len'] + self.config['output_len'] if self.generate_from_token else None)
         self.model = llm
@@ -41,6 +43,7 @@ class VLLM(AccelerationFramework):
                 outputs = self.model.generate(prompt_token_ids=[t.tolist() for t in token_batch['input_ids']],
                                               sampling_params=sampling_params, use_tqdm=False)
                 batch_results.append([o.outputs[0].token_ids for o in outputs])
+                # access per token stats with model.llm_engine._get_stats(None) and update in timings.py
         else:
             assert self.tokenized_data is None
             for batch in tqdm.tqdm(self.data, desc='batch', colour='CYAN'):
