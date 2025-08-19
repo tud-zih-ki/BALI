@@ -189,7 +189,7 @@ class FlopCounter():
                     params["activation"] = s[0]
         else:
             params["activation"] = "relu"
-            logging.warning(f"Complexity: Assuming activation = {params["activation"]}")
+            logging.warning(f"Complexity: Assuming activation = {params['activation']}")
 
         if params["d_ffn"] is None:
             if "glu" in params["activation"]:
@@ -199,21 +199,21 @@ class FlopCounter():
                 # Assume conventional D x 4D MLP
                 params["d_ffn"] = params["d_embed"] * 4
 
-            logging.warning(f"Complexity: Assuming d_ffn = {params["d_ffn"]}")
+            logging.warning(f"Complexity: Assuming d_ffn = {params['d_ffn']}")
 
         for layer in ["ln", "attn", "mlp"]:
             if params[f"{layer}_bias"] is None:
                 # Prefer to underestimate complexity
                 params[f"{layer}_bias"] = False
-                logging.warning(f"Complexity: Assuming {layer}_bias = {params[f"{layer}_bias"]}")
+                logging.warning(f"Complexity: Assuming {layer}_bias = {params[f'{layer}_bias']}")
 
         if params["n_kvhead"] is None:
             params["n_kvhead"] = params["n_head"]
-            logging.warning(f"Complexity: Assuming n_kvhead = {params["n_kvhead"]} (No MQA/GQA)")
+            logging.warning(f"Complexity: Assuming n_kvhead = {params['n_kvhead']} (No MQA/GQA)")
 
         if params["type"] is None:
             params["type"] = "decoder"
-            logging.warning(f"Complexity: Assuming type = {params["type"]}")
+            logging.warning(f"Complexity: Assuming type = {params['type']}")
 
         return params
 
