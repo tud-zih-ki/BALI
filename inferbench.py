@@ -46,6 +46,9 @@ class InferBench:
         if not os.path.exists(self.config['output_dir']):
             os.makedirs(self.config['output_dir'])
 
+        if not os.path.exists(os.path.join(self.config["output_dir"], "../latest")):
+            os.makedirs(os.path.join(self.config["output_dir"], "../latest"))
+
         # set logger
         logging.basicConfig(filename=os.path.join(self.config['output_dir'], 'logs.txt'), filemode='a',
                             encoding='utf-8', level=args.loglevel.upper(),
@@ -165,8 +168,10 @@ class InferBench:
             f"RESULTS\n{tabulate(res[['total_time_avg', 'total_gflops_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
 
         res_path = os.path.join(self.config['output_dir'], 'benchmark_summary.csv')
+        res_path_latest = os.path.join(self.config['output_dir'], '../latest/', 'benchmark_summary.csv')
         res.to_csv(res_path)
-        logging.info(f"Saved Benchmark summary to {res_path}")
+        res.to_csv(res_path_latest)
+        logging.info(f"Saved Benchmark summary to {res_path} and {res_path_latest}.")
 
     def plot_token_times(self, token_timestamps):
         for framework in token_timestamps:
@@ -199,8 +204,9 @@ class InferBench:
             plt.xlabel("Output Token No.")
             plt.title(f"Token generation latencies for {framework}")
             plt.savefig(os.path.join(self.config["output_dir"], f"token-timings-{framework}.png"), dpi=500)
+            plt.savefig(os.path.join(self.config["output_dir"], "../latest/", f"token-timings-{framework}.png"), dpi=500)
             plt.close()
-            print(f"Saved token latencies diagram to: {os.path.join(self.config["output_dir"], f"token-timings-{framework}.png")}")
+            print(f"Saved token latencies diagram to: {os.path.join(self.config['output_dir'], f'token-timings-{framework}.png')}")
 
     def save_results(self, result_dict: dict) -> None:
         """:
@@ -210,22 +216,29 @@ class InferBench:
         """
         assert os.path.exists(self.config['output_dir'])
 
-        result_path = os.path.join(self.config['output_dir'], 'benchmark_results.json')
+        res_path = os.path.join(self.config['output_dir'], 'benchmark_results.json')
+        res_path_latest = os.path.join(self.config['output_dir'], '../latest/', 'benchmark_results.json')
 
-        with open(result_path, 'w') as out_file:
+        with open(res_path, 'w') as out_file:
             json.dump(result_dict, out_file, indent=4)
-        print(f"Saved results to {result_path}")
+        with open(res_path_latest, 'w') as out_file:
+            json.dump(result_dict, out_file, indent=4)
+        print(f"Saved results to {res_path} and {res_path_latest}.")
 
     def save_configs(self):
-        result_path = os.path.join(self.config['output_dir'], 'config.json')
+        res_path = os.path.join(self.config['output_dir'], 'config.json')
+        res_path_latest = os.path.join(self.config['output_dir'], '../latest/', 'config.json')
 
-        with open(result_path, 'w') as out_file:
+        with open(res_path, 'w') as out_file:
+            json.dump(self.config, out_file, indent=4)
+        with open(res_path_latest, 'w') as out_file:
             json.dump(self.config, out_file, indent=4)
 
-        logging.info(f"Saved configs to {result_path}")
+        logging.info(f"Saved configs to {res_path} and {res_path_latest}.")
 
         if self.config["save_slurm_config"]:
             slurm_conf_path = os.path.join(self.config['output_dir'], 'slurm_config.json')
+            slurm_conf_path_latest = os.path.join(self.config['output_dir'], '../latest/', 'slurm_config.json')
             slurm_conf = {}
             pattern = re.compile(r'SLURM*')
             for key, value in os.environ.items():
@@ -234,8 +247,10 @@ class InferBench:
 
             with open(slurm_conf_path, 'w') as out_file:
                 json.dump(slurm_conf, out_file, indent=4)
+            with open(slurm_conf_path_latest, 'w') as out_file:
+                json.dump(slurm_conf, out_file, indent=4)
 
-            logging.info(f"Saved slurm config of benchmark run to {slurm_conf_path}.")
+            logging.info(f"Saved slurm config of benchmark run to {slurm_conf_path} and {slurm_conf_path_latest}.")
 
     @staticmethod
     def clean_gpu_memory():
