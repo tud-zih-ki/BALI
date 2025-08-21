@@ -10,6 +10,11 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import torch
+<<<<<<< Updated upstream:bali/inferbench.py
+=======
+import time
+from deepspeed.accelerator import get_accelerator
+>>>>>>> Stashed changes:inferbench.py
 from huggingface_hub import login
 from tabulate import tabulate
 from tqdm.auto import tqdm
@@ -77,8 +82,9 @@ class InferBench:
                 continue
 
             logging.info(f"Running acceleration framework {framework}…")
+            exec_start= time.time()
             result_dict[framework] = {}
-
+            
             try:
                 if self.config['warm_up_reps'] > 0:
                     logging.info(f"Starting Warm up for {framework}")
@@ -97,11 +103,14 @@ class InferBench:
                     result_dict[framework][r] = result
                     self.clean_gpu_memory()
             except Exception as e:
+                exec_end = time.time()
                 logging.error(
                     f'Error for Framework {framework} or different error occured! Choose from the following frameworks: '
                     f"{list(frameworks_available.keys())}.\nError was: {e}")
                 tb = traceback.format_exc()
                 print(tb)
+                duration = exec_end-exec_start 
+                write_errorfile(framework,exec_start,exec_end, duration,tb)
 
         self.evaluate_results(result_dict)
         self.save_results(result_dict)
@@ -185,6 +194,28 @@ class InferBench:
                 json.dump(slurm_conf, out_file, indent=4)
 
             logging.info(f"Saved slurm config of benchmark run to {slurm_conf_path}.")
+    
+    def write_errorfile(framework,start_time,end_time,duration, error):
+        assert os.path.exists(self.config['output_dir'])
+
+        error_path = os.path.join(self.config['output_dir'], 'errors.json')
+        
+        if os.path.exists(error_path):
+            with open(error_path, 'r') as out_file:
+                error_dict = json.load(out_file)
+        else:
+            error_dict = {}
+        
+        with open(error_path, 'w') as out_file:
+            error_dict[framework] = {'start_time': start_time,
+                                     'end_time': end_time,
+                                     'duration': duration,
+                                     'error': error
+                                    }
+            json.dump(error_dict, out_file, indent=4)
+        
+        print(f"Saved error to {error_path}")
+
 
     @staticmethod
     def clean_gpu_memory():
