@@ -3,11 +3,11 @@ from itertools import chain
 import os
 
 import mii
-import tqdm
+from tqdm.auto import tqdm
 from deepspeed.accelerator import get_accelerator
 from transformers import AutoTokenizer
 
-from acceleration_frameworks.acceleration_framework import AccelerationFramework
+from .acceleration_framework import AccelerationFramework
 
 
 class Deepspeed(AccelerationFramework):
@@ -91,7 +91,7 @@ class Deepspeed(AccelerationFramework):
         Generator function using DeepSpeed MII.
         """
         batch_results = []
-        for batch in tqdm.tqdm(self.mii_data, desc='batch', colour='CYAN'):
+        for batch in tqdm(self.mii_data, desc='batch', colour='CYAN'):
             outputs = self.pipe(prompts=batch, return_full_text=False, temperature=0.1, top_p=1.0, ignore_eos=True,
                                 min_new_tokens=self.config['output_len'], max_new_tokens=self.config['output_len'])
             batch_results.append(outputs)

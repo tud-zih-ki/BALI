@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 import torch
 
@@ -11,6 +12,7 @@ class InferenceTimer:
         self.setup_time = None
         self.tokenize_time = None
         self.time_to_first_token = None
+        self.end_timestamp = None
 
     def start_timer(self):
         self.start_time = time.perf_counter()
