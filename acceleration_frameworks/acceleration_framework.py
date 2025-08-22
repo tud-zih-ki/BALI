@@ -8,10 +8,11 @@ from timer import InferenceTimer
 
 
 class AccelerationFramework():
-    def __init__(self, config, data, generate_from_token: bool = True, random_tokens=True):
+    def __init__(self, config, data, flops, generate_from_token: bool = True, random_tokens=True):
         self.timer = InferenceTimer()
         self.data = data
         self.config = config
+        self.flops = flops
         self.generate_from_token = generate_from_token
         self.random_tokens = random_tokens
 
@@ -50,7 +51,11 @@ class AccelerationFramework():
             assert outputs.shape[1] == self.config[
                 'output_len'], f"Output length {outputs.shape[1]} of framework {self.__class__.__name__} does not match the configs output length!"
 
+        self.flops.calc_complexity()
+        print(f"Achieved GFLOPS: {1e-9 * self.flops.get_total_flops() / self.timer.generation_time():.2f}")
+
         return {'total_time': self.timer.total_prediction_time(),
+                'total_gflops' : 1e-9 * self.flops.get_total_flops() / self.timer.generation_time(),
                 'output_shape': outputs.shape,
                 'batch_size': self.config['batch_size'],
                 'generate_from_token': self.generate_from_token,
