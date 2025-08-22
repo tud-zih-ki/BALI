@@ -74,11 +74,14 @@ class HFAccelerate(AccelerationFramework):
 
     def generate(self):
         batch_results = torch.Tensor().to(self.device)
-        streamer = TimerStreamer(self.timer)
+        # optionally, enable the streamer to capture token latencies
+        streamer = TimerStreamer(self.timer) if self.config["token_latencies"] else None
         if self.generate_from_token:
             assert self.tokenized_data is not None
             for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
-                streamer.start()
+                if streamer:
+                    streamer.start()
+
                 try:
                     result = self.model[0].generate(**batch, generation_config=self.model[1],
                                                     streamer=streamer, use_cache=self.config["use_cache"])
@@ -95,7 +98,9 @@ class HFAccelerate(AccelerationFramework):
             self.tokenize_data()
             # no ways of feeding prompts and using on the fly tokenization
             for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
-                streamer.start()
+                if streamer:
+                    streamer.start()
+
                 result = self.model[0].generate(**batch, generation_config=self.model[1], streamer=streamer)
                 result = torch.split(result, [len(batch['input_ids'][0]), self.config['output_len']], dim=1)[1]
                 batch_results = torch.cat((batch_results, result))

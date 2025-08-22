@@ -82,6 +82,18 @@ For Convenience, you might use `benchmark_jobs_spawner.sh` that will launch a wa
 --open-llm-backend       # Backend used for OpenLLM Framework
 ```
 
+## Outputs
+
+Benchmark results are placed in the output directory specified using `--output-dir`. It contains the following files:
+
+```
+benchmark_results.json
+benchmark_summary.csv
+config.json
+```
+
+The measured quantities for each run are contained by `benchmark_results.json` with individual entries for each framework and each repetition, excluding warm-up runs. Statistically processed results are in the corresponding `benchmarks_summary.csv` file, and the run configuration is saved in `config.json`. Additionally, the `hf_accelerate` framework supports collection of individual token latencies. If the framework is selected and `--token-latencies` is set, the per-token latencies are added to the `hf_accelerate` entry in `benchmark_results.json` and represent prefill (first token) and decoding (remaining tokens) execution times. They are also processed as a bar graph in an additional `token-timings-hf_accelerate.png` file. Other frameworks don't currently support token timings and don't emit this data. Capturing token latencies can incur a 3% performance overhead for small problem sizes.
+
 ## Citation
 
 ```

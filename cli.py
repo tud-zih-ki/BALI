@@ -62,6 +62,8 @@ def arguments(parser):
                         help="Provide logging level, default is info. Use debug for detailed log")
 
     # Inference framework specific parameters
+    parser.add_argument("--token-latencies", action="store_true",
+                        help="Whether to enable hooks for measuring token latencies in hf_transformers")
     parser.add_argument("--compression-config", type=dict, default={"model": "", "rate": 0.5},
                         help="Prompt Compression Configuration for LLMLingua")
     parser.add_argument("--open-llm-backend", type=str, default="vllm",

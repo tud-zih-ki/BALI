@@ -214,47 +214,33 @@ class InferBench:
                 decode_times[framework] = [np.median(t) for t in token_timestamps[framework][1:]]
 
             xs = list(range(len(token_timestamps[framework])))
-            # avgs = [np.average(t) for t in token_timestamps[framework]]
-            # flops = [f / a for f, a in zip(self.flops.get_flops(), avgs)]
-            # stdevs = [np.std(t) for t in token_timestamps[framework]]
-            # plt.bar(xs, avgs, yerr=stdevs)
-
-            # error bars could also represent min and max (which i think is more informative
-            #   but doesn't align with other benchmark errors)
-            #   (better yet, 10th and 90th percentiles to account for outliers, but i could not be bothered)
-
             medians = [np.median(t) for t in token_timestamps[framework]]
+            lows = [medians[i] - np.percentile(t, 5) for i, t in enumerate(token_timestamps[framework])]
+            highs = [np.percentile(t, 95) - medians[i] for i, t in enumerate(token_timestamps[framework])]
             tflops = [f * self.config["batch_size"] / (a * 1e12 * self.config["num_samples"]) for f, a in zip(self.flops.get_flops(), medians)]
-            mins = [medians[i] - np.percentile(t, 5) for i, t in enumerate(token_timestamps[framework])]
-            maxs = [np.percentile(t, 95) - medians[i] for i, t in enumerate(token_timestamps[framework])]
             colors = ["indigo", "orange"]
             patches = []
             fig, ax1 = plt.subplots(figsize=(10, 4))
             ax2 = ax1.twinx()
 
             if len(xs) > 100:
-                ax1.bar(xs, medians, yerr=(mins, maxs), color=colors[0], width=1.001)
+                ax1.bar(xs, medians, yerr=(lows, highs), color=colors[0], width=1.001)
                 ax2.scatter(xs, tflops, color=colors[1], s=3)
             else:
-                ax1.bar(xs, medians, yerr=(mins, maxs), color=colors[0])
+                ax1.bar(xs, medians, yerr=(lows, highs), color=colors[0])
                 ax2.scatter(xs, tflops, color=colors[1])
-            patches.append(Patch(color=colors[0], label=f"Ausführungszeit"))
-            patches.append(Patch(color=colors[1], label=f"Rechenleistung"))
+            patches.append(Patch(color=colors[0], label=f"Batch Latencies"))
+            patches.append(Patch(color=colors[1], label=f"Compute Throughput"))
             fig.legend(ncols=2, loc="outside upper center", handles=patches, frameon=False)
 
             ax1.set_xlim(-0.5, max(0.5, max(xs) - 0.5))
             ax1.set_ylim(0, None)
             ax2.set_ylim(0, None)
-            ax1.set_ylabel("Tokenlatenz [s]", fontsize=14)
-            ax1.set_xlabel("Ausgabetoken Nr.", fontsize=14)
-            ax2.set_ylabel("Rechenleistung [TFLOPS]", fontsize=14)
-            # ax1.set_ylabel("Token batch latency in $s$", fontsize=14)
-            # ax1.set_xlabel("Output Token No.", fontsize=14)
-            # ax2.set_ylabel("TFLOPS", fontsize=14)
-            # plt.title(f"Batch latencies for {framework}")
+            ax1.set_ylabel("Batch latency [s]", fontsize=14)
+            ax1.set_xlabel("Output token ID", fontsize=14)
+            ax2.set_ylabel("Compute [TFLOPS]", fontsize=14)
             plt.subplots_adjust(left=None, bottom=0.15, right=None, top=0.88)
             plt.savefig(os.path.join(self.config["output_dir"], f"token-timings-{framework}.png"), dpi=500)
-            plt.savefig(os.path.join(self.config["output_dir"], "../latest/", f"token-timings-{framework}.png"), dpi=500)
             plt.close()
             print(f"Saved token latencies diagram to: {os.path.join(self.config['output_dir'], f'token-timings-{framework}.png')}")
 
