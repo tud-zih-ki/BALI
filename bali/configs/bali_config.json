@@ -9,12 +9,13 @@
     "vllm_async"
   ],
   "repeats": 1,
+  "warm_up_reps": 0,
+  "batch_size": 1,
   "num_gpus": 1,
   "input_len": [1, 2, 4, 8],
   "output_len": [1, 2, 4, 8],
   "generate_from_token": true,
   "dtype": "float16",
-  "warm_up_reps": 0,
   "tokenizer_init_config": {
     "padding": "max_length",
     "padding_side": "left",

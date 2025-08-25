@@ -1,4 +1,5 @@
 import argparse
+import os
 
 
 def get_parser():
@@ -8,13 +9,17 @@ def get_parser():
 
 
 def arguments(parser):
+    # Get the default data path relative to the package
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    default_data_path = os.path.join(package_dir, 'data', 'prompts_mini.txt')
+    
     parser.add_argument("--model-name", type=str,
                         help="LLM to use for Benchmark run")
     parser.add_argument("--tokenizer", type=str, default=None,
                         help="Tokenizer to use, default is same as model")
     parser.add_argument("--frameworks", type=str, nargs='+', default=['hf_accelerate'],
                         help='Inference accelerations frameworks to measure performance')
-    parser.add_argument("--data", type=str, default='data/prompts_mini.txt',
+    parser.add_argument("--data", type=str, default=default_data_path,
                         help="Path to the prompts text file")
     parser.add_argument("--output-dir", type=str, default="../inferbench_results",
                         help="Results directory")

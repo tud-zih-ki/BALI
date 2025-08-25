@@ -8,7 +8,11 @@ setup(
     name="bali",
     version="0.1.0",
     packages=find_packages(),
-    python_requires=">=3.12",
+    package_data={
+        "bali": ["configs/*.json", "data/*.txt", "data/*.csv"]
+    },
+    include_package_data=True,
+    python_requires=">=3.11",
     install_requires=[
         "numpy",
         "pandas", 

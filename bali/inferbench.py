@@ -4,17 +4,14 @@ import logging
 import os.path
 import re
 import traceback
+import time
 from argparse import ArgumentParser
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 import torch
-<<<<<<< Updated upstream:bali/inferbench.py
-=======
-import time
-from deepspeed.accelerator import get_accelerator
->>>>>>> Stashed changes:inferbench.py
+
 from huggingface_hub import login
 from tabulate import tabulate
 from tqdm.auto import tqdm
@@ -82,7 +79,7 @@ class InferBench:
                 continue
 
             logging.info(f"Running acceleration framework {framework}…")
-            exec_start= time.time()
+            exec_start= time.perf_counter()
             result_dict[framework] = {}
             
             try:
@@ -103,14 +100,14 @@ class InferBench:
                     result_dict[framework][r] = result
                     self.clean_gpu_memory()
             except Exception as e:
-                exec_end = time.time()
+                exec_end = time.perf_counter()
                 logging.error(
                     f'Error for Framework {framework} or different error occured! Choose from the following frameworks: '
                     f"{list(frameworks_available.keys())}.\nError was: {e}")
                 tb = traceback.format_exc()
                 print(tb)
                 duration = exec_end-exec_start 
-                write_errorfile(framework,exec_start,exec_end, duration,tb)
+                self.write_errorfile(framework,exec_start,exec_end, duration,tb)
 
         self.evaluate_results(result_dict)
         self.save_results(result_dict)
@@ -195,7 +192,7 @@ class InferBench:
 
             logging.info(f"Saved slurm config of benchmark run to {slurm_conf_path}.")
     
-    def write_errorfile(framework,start_time,end_time,duration, error):
+    def write_errorfile(self, framework,start_time,end_time,duration, error):
         assert os.path.exists(self.config['output_dir'])
 
         error_path = os.path.join(self.config['output_dir'], 'errors.json')

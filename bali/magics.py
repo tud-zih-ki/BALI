@@ -23,14 +23,14 @@ class BALIMagics(Magics):
     
     def _load_bali_config(self):
         """Load default configuration."""
-        bali_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        config_path = os.path.join(bali_root, "configs", "bali_config.json")
+        bali_package_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(bali_package_dir, "configs", "bali_config.json")
         
         with open(config_path, 'r') as f:
             config = json.load(f)
         
         if 'data' in config and not os.path.isabs(config['data']):
-            config['data'] = os.path.join(bali_root, config['data'])
+            config['data'] = os.path.join(bali_package_dir, config['data'])
         
         return config
     

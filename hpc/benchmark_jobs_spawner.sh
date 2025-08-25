@@ -69,7 +69,7 @@ submit_job() {
             .input_len = $input_len | 
             .output_len = $output_len | 
             .output_dir = $output_dir | 
-            .frameworks = $frameworks' "$BALI_REPO/configs/template.json" > "$exp_dir/config.json"
+            .frameworks = $frameworks' "$BALI_REPO/bali/configs/template.json" > "$exp_dir/config.json"
     
     local export_opts="--export=ALL"; [[ " ${vllm_v0_models[*]} " =~ " ${model_name} " ]] && export_opts="--export=ALL,VLLM_USE_V1=0"
     
