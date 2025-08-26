@@ -45,6 +45,7 @@ BALI Magic Commands:
 
 %%bali_config               - Configure benchmark parameters
     frameworks: vllm hf_accelerate
+    batch_size: 1 4 8
     input_len: 128 256 512
     output_len: 64 128
     model_name: facebook/opt-1.3b
@@ -114,24 +115,26 @@ Examples:
         
         model_names = ensure_list(self.bali_config.get('model_name', ['facebook/opt-1.3b']))
         frameworks = ensure_list(self.bali_config.get('frameworks', ['hf_accelerate']))
+        batch_sizes = ensure_list(self.bali_config.get('batch_size', [1]))
         input_lens = ensure_list(self.bali_config.get('input_len', [128]))
         output_lens = ensure_list(self.bali_config.get('output_len', [128]))
         
-        combinations = list(itertools.product(model_names, frameworks, input_lens, output_lens))
+        combinations = list(itertools.product(model_names, frameworks, batch_sizes, input_lens, output_lens))
         
         print(f"Running {len(combinations)} combinations -> {base_output_dir}")
         
-        for i, (model_name, framework, input_len, output_len) in enumerate(combinations, 1):
+        for i, (model_name, framework, batch_size, input_len, output_len) in enumerate(combinations, 1):
             model_dir_name = model_name.replace('/', '_')
-            combo_output_dir = os.path.join(base_output_dir, model_dir_name, framework, str(input_len), str(output_len))
+            combo_output_dir = os.path.join(base_output_dir, model_dir_name, framework, str(batch_size), str(input_len), str(output_len))
             
-            print(f"[{i}/{len(combinations)}] {model_name} | {framework} | {input_len}→{output_len}")
+            print(f"[{i}/{len(combinations)}] {model_name} | {framework} | bs={batch_size} | {input_len}→{output_len}")
             
             # Create config for this combination
             combo_config = self.bali_config.copy()
             combo_config.update({
                 'model_name': model_name,
                 'frameworks': [framework],
+                'batch_size': batch_size,
                 'input_len': input_len,
                 'output_len': output_len,
                 'output_dir': combo_output_dir

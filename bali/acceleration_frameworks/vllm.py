@@ -24,6 +24,7 @@ class VLLM(AccelerationFramework):
             revision="main",
             tensor_parallel_size=self.config['num_gpus'],
             enforce_eager=False,
+            max_num_seqs=self.config['batch_size'],
             max_model_len=self.config['input_len'] + self.config['output_len'] if self.generate_from_token else None)
         self.model = llm
 
