@@ -54,6 +54,8 @@ def arguments(parser):
                         default={"return_tensors": "pt", "padding": "max_length", "truncation": True})
     parser.add_argument("--compression-config", type=dict, default={"model": "", "rate": 0.5},
                         help="Prompt Compression Configuration for LLMLingua")
+    parser.add_argument("--hf-login-token", type=str, default=None,
+                        help="Hugging Face login token for accessing gated models")
     
     return parser
 

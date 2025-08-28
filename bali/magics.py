@@ -93,8 +93,8 @@ Examples:
                 except ValueError:
                     converted_values.append(val)
             
-            # Set value
-            if isinstance(self.bali_config[key], list):
+            # Set value based on whether we have multiple values or just one
+            if len(converted_values) > 1:
                 self.bali_config[key] = converted_values
             else:
                 self.bali_config[key] = converted_values[0] if converted_values else None
