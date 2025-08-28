@@ -84,9 +84,6 @@ Examples:
             key, value_str = line.split(':', 1)
             key, value_str = key.strip(), value_str.strip()
             
-            if key not in self.bali_config:
-                raise ValueError(f"Unknown key: {key}")
-            
             # Parse values
             raw_values = value_str.split()
             converted_values = []

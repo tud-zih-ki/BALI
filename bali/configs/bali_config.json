@@ -11,6 +11,7 @@
   "repeats": 1,
   "warm_up_reps": 0,
   "batch_size": [1],
+  "num_samples": 1024,
   "num_gpus": 1,
   "input_len": [1, 2, 4, 8],
   "output_len": [1, 2, 4, 8],
