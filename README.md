@@ -18,7 +18,6 @@ It allows a gine grained configuration of the inference, tailored to application
 |DeepSpeed|https://github.com/microsoft/DeepSpeed-MII|
 
 
-
 ## Installation
 ```bash
 source setup_cuda121_torch212.sh
@@ -63,6 +62,56 @@ For Convenience, you might use `benchmark_jobs_spawner.sh` that will launch a wa
   --tokenize-config             Config Dictionary for tokenize function parameters
   --compression-config          Prompt Compression Configuration for LLMLingua
 ```
+## JumpLM - Benchmarking LLMs in Jupyter
+
+JumpLM is combined Tool from [JUmPER](https://github.com/ScaDS/jumper_ipython_extension/tree/bali-hook#) and BALI
+for joint LLM benchmarking and hardware performance monitoring.
+![Overview of JumpLM Interface](grafics/JumpLM-screenshot.png)
+### Setup
+1. Install BALI, see [Installation](#installation)
+2. Install [JUmPER](https://github.com/ScaDS/jumper_ipython_extension/tree/bali-hook#) extension
+```bash
+git clone git@github.com:ScaDS/jumper_ipython_extension.git
+cd jumper_ipython_extension 
+git switch bali-hook
+pip install .
+```
+3. Install dependencies
+```bash
+pip install ipywidgets ipympl iypkernel
+```
+4. If needed, build kernel from virtual env via
+```bash
+python -m ipykernel install --prefix $BALI_REPO/BALI/pyenv_inferbench_cuda126_torch260 --display-name jumpLM-kernel
+```
+5. Launch Notebook, the following command should be available using the kernel:
+
+### Usage in Jupyter Notebook
+JumpLM is available through a variety of cell magics.
+
+1. Load Extensions and start performance monitor
+```jupyter
+%reload_ext jumper_extension
+%reload_ext bali
+%perfmonitor_start
+```
+
+2. Set your inference config
+```jupyter
+%%bali_config
+model_name: facebook/opt-1.3b 
+frameworks: hf_accelerate
+batch_size: 128
+input_len: 32
+output_len: 32
+warm_up_reps: 0
+repeats: 1
+```
+3. Show BALI config via `%bali_config_show`
+3. run BALI via `%bali_run`
+4. Plot inference speed heatmaps via  `%bali_plot`
+5. Start JUmPER Performance Visualization: `%perfmonitor_plot`
+
 
 ## Citation
 ```
