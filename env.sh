@@ -1,5 +1,4 @@
 #!/bin/bash
-# TUD ZIH Capella setup
 #module load release/24.04 GCCcore/13.3.0 Python/3.12.3 CUDA/12.6.0
 #export HF_TOKEN=
 
