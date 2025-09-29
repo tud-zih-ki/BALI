@@ -4,7 +4,7 @@ import logging
 import torch
 from transformers import AutoTokenizer
 
-from timer import InferenceTimer
+from ..timer import InferenceTimer
 
 
 class AccelerationFramework():
