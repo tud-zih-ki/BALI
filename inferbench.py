@@ -116,7 +116,7 @@ class InferBench:
             with open(self.config['data'], 'r') as file:
                 samples = file.readlines()
         else:
-            ValueError("No data file provided!")
+            raise ValueError("No data file provided!")
 
         def batch_data(samples):
             l = len(samples)
@@ -163,14 +163,17 @@ class InferBench:
         res = res.reindex(sorted(res.columns), axis=1).iloc[:, 4:]
 
         # update results_dict. no regard for individual runs as of now, so it's not in r[framework][0]["prefill_time"]
-        for framework in prefill_times:
-            result_dict[framework]["prefill_time_median"] = prefill_times[framework]
+        for framework, median in prefill_times.items():
+            result_dict[framework]["prefill_time_median"] = median
         # separate loops should maybe one framework only capture prefill, or the other way around, or whatever
-        for framework in decode_times:
-            result_dict[framework]["decode_times_median"] = decode_times[framework]
+        for framework, median in decode_times.items():
+            result_dict[framework]["decode_times_median"] = median
 
         logging.info(
-            f"RESULTS\n{tabulate(res[['total_time_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
+            f"RESULTS\n{tabulate(
+                res[['total_time_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']],
+                headers='keys',
+                tablefmt='fancy_grid')}")
 
         res_path = os.path.join(self.config['output_dir'], 'benchmark_summary.csv')
         res.to_csv(res_path)
@@ -222,7 +225,7 @@ class InferBench:
                 ax.bar(xs, medians, yerr=(mins, maxs), color=colors[0], width=1.001)
             else:
                 ax.bar(xs, medians, yerr=(mins, maxs), color=colors[0])
-            patches.append(Patch(color=colors[0], label=f"Batch Latencies"))
+            patches.append(Patch(color=colors[0], label="Batch Latencies"))
             fig.legend(ncols=1, loc="outside upper center", handles=patches, frameon=False)
 
             ax.set_xlim(-0.5, max(0.5, max(xs) - 0.5))

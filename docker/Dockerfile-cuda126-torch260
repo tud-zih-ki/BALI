@@ -1,0 +1,96 @@
+# CUDA 12.6 + build toolchain
+FROM nvidia/cuda:12.6.0-devel-ubuntu24.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# ---- System dependencies ----
+RUN apt-get update && apt-get install -y \
+    python3.12 \
+    python3.12-dev \
+    python3-pip \
+    python3-venv \
+    git \
+    build-essential \
+    ninja-build \
+    cmake \
+    curl \
+    ca-certificates \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Make python3.12 default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+
+# ---- Environment layout (matches your script) ----
+ENV BALI_REPO=/opt/bali
+WORKDIR ${BALI_REPO}
+COPY ../../ .  # relative path from Dockerfile to repo root
+
+ENV BALI_CACHE_REPO=/opt/bali
+
+ENV XDG_CACHE_HOME=${BALI_CACHE_REPO}/.cache
+ENV TRITON_CACHE_DIR=${BALI_BALI_CACHE_REPOREPO}/.triton
+ENV BENTOML_HOME=${BALI_CACHE_REPO}/.bentoml
+ENV HF_HOME=${BALI_CACHE_REPO}/.huggingface
+
+# Optional:
+# ENV HF_TOKEN=...
+
+# ---- Python tooling ----
+RUN python -m pip install --upgrade pip setuptools wheel
+
+# ---- PyTorch (CUDA 12.6) ----
+RUN pip install \
+    torch==2.6.0
+
+# ---- Core ML dependencies ----
+RUN pip install \
+    numpy==1.26.4 \
+    transformers==4.50.3 \
+    sentencepiece==0.2.0 \
+    tqdm==4.67.1
+
+# ---- vLLM ----
+RUN pip install --no-build-isolation \
+    vllm==0.8.2
+
+# ---- LLM Lingua ----
+RUN pip install --no-build-isolation \
+    llmlingua==0.2.2 \
+    accelerate==1.6.0
+
+# ---- Flash-Attention deps ----
+RUN pip install \
+    ninja==1.11.1.4 \
+    packaging==24.2
+
+# ---- Flash-Attention ----
+RUN pip install --no-build-isolation \
+    flash-attn==2.7.4.post1
+
+# ---- Utilities ----
+RUN pip install \
+    pandas \
+    tabulate
+
+# ---- FlashInfer ----
+RUN pip install \
+    flashinfer-python \
+    -i https://flashinfer.ai/whl/cu126/torch2.6/
+
+# ---- DeepSpeed ----
+RUN pip install --no-build-isolation \
+    deepspeed==0.16.5 \
+    deepspeed-mii==0.3.3
+
+# ---- matplotlib ----
+RUN pip install matplotlib
+
+# ---- Sanity check ----
+RUN python - << 'EOF'
+import torch
+print("Torch:", torch.__version__)
+print("CUDA available:", torch.cuda.is_available())
+EOF
+
+CMD ["/bin/bash"]

@@ -1,0 +1,15 @@
+[MASTER]
+ignore-paths=patches/openllm
+extension-pkg-whitelist=torch,torch.nn,torch.distributed,vllm,flash_attn,deepspeed
+
+[MESSAGES CONTROL]
+disable =
+    E0401, # unable to import
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+    fixme
+
+[FORMAT]
+max-line-length=150

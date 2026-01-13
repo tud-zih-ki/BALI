@@ -1,4 +1,5 @@
 import logging
+import sys
 import torch
 import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
@@ -71,23 +72,24 @@ class HFAccelerate(AccelerationFramework):
                 try:
                     result = self.model[0].generate(**batch, generation_config=self.model[1], streamer=streamer)
                 except ValueError as e:
-                    if "The following `model_kwargs` are not used by the model: ['token_type_ids'] (note: typos in the generate arguments will also show up in this list)" in repr(e):
-                        logging.error("generate() failed due to wrong tokenizer configuration! Try adding 'return_token_type_ids': false to tokenize_config")
-                        exit(1)
+                    if "The following `model_kwargs` are not used by the model: ['token_type_ids'] "\
+                        "(note: typos in the generate arguments will also show up in this list)" in repr(e):
+                        logging.error("generate() failed due to wrong tokenizer configuration! Try adding 'return_token_type_ids': "
+                            "false to tokenize_config")
+                        sys.exit(1)
                 batch_results = torch.cat((batch_results, result))
 
             return torch.split(batch_results, [self.config['input_len'], self.config['output_len']], dim=1)[1]
 
-        else:
-            assert self.tokenized_data is None, f"Use tokenized data is false but data was still tokenized!"
-            self.tokenize_data()
-            # no ways of feeding prompts and using on the fly tokenization
-            for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
-                if streamer:
-                    streamer.start()
+        assert self.tokenized_data is None, "Use tokenized data is false but data was still tokenized!"
+        self.tokenize_data()
+        # no ways of feeding prompts and using on the fly tokenization
+        for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):
+            if streamer:
+                streamer.start()
 
-                result = self.model[0].generate(**batch, generation_config=self.model[1], streamer=streamer)
-                result = torch.split(result, [len(batch['input_ids'][0]), self.config['output_len']], dim=1)[1]
-                batch_results = torch.cat((batch_results, result))
+            result = self.model[0].generate(**batch, generation_config=self.model[1], streamer=streamer)
+            result = torch.split(result, [len(batch['input_ids'][0]), self.config['output_len']], dim=1)[1]
+            batch_results = torch.cat((batch_results, result))
 
-            return batch_results
+        return batch_results

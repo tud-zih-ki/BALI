@@ -38,11 +38,11 @@ class LLMLingua(AccelerationFramework):
     def generate(self):
         batch_results = torch.Tensor().to(self.device)
         if self.generate_from_token:
-            logging.info(f'Using LLM lingua with generate from token Flag. Note that input length will not match the fixed len here -\
-                Will default to generation from prompt but from pre-tokenized prompts.')
+            logging.info('Using LLM lingua with generate from token Flag. Note that input length will not match the fixed len here -'
+                'Will default to generation from prompt but from pre-tokenized prompts.')
             assert self.tokenized_data is not None
         else:
-            assert self.tokenized_data is None, f"Use tokenized data is false but data was still tokenized!"
+            assert self.tokenized_data is None, "Use tokenized data is false but data was still tokenized!"
             self.tokenize_data()
 
         for batch in tqdm.tqdm(self.tokenized_data, desc='batch', colour='CYAN'):

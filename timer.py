@@ -31,8 +31,7 @@ class InferenceTimer:
     def generation_time(self):
         if not self.tokenize_time:
             return self.end_time - self.setup_time
-        else:
-            return self.end_time - self.tokenize_time
+        return self.end_time - self.tokenize_time
 
     def token_per_sec(self, output_token):
         if not torch.is_tensor(output_token):

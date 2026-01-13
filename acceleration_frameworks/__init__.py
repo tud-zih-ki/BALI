@@ -28,4 +28,3 @@ for _identifier, _rel_module, _cls_name in _FRAMEWORK_SPECS:
 
 # What gets imported via "from acceleration_frameworks import *"
 __all__ = [cls.__name__ for cls in frameworks_available.values()]
-
