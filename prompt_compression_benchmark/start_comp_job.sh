@@ -14,7 +14,6 @@
 #SBATCH --cpus-per-task=12
 #SBATCH --gres=gpu:1
 #SBATCH --gpus-per-task=1
-#SBATCH --account=p_gptx
 
 NAME="alpha"
 MODEL="llmlingua2"
