@@ -65,6 +65,7 @@ class AccelerationFramework():
                 'num_output_token': self.timer.num_output_token,
                 'sequences/s': self.timer.seq_per_sec(outputs),
                 'start_timestamp': self.timer.start_time,
+                'start_timestamp_absolute':self.timer.absolute_start_time,
                 'end_timestamp': self.timer.end_time,
                 'setup_timestamp': self.timer.setup_time,
                 'tokenize_timestamp': self.timer.tokenize_time}
