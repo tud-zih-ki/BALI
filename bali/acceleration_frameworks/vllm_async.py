@@ -2,7 +2,6 @@ import asyncio
 import logging
 from itertools import chain
 
-from tqdm import tqdm
 from transformers import AutoTokenizer
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
@@ -15,9 +14,9 @@ try:
 except ImportError:
     HAS_VLLM_INPUTS = False
 
-from acceleration_frameworks.acceleration_framework import AccelerationFramework
+from .acceleration_framework import AccelerationFramework
 from vllm import SamplingParams
-
+from tqdm import tqdm
 
 class VLLM_Async(AccelerationFramework):
     """

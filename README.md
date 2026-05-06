@@ -1,4 +1,4 @@
-<img src="grafics/BALI%20transparent.png" align="left" width="115"/>
+<img src="grafics/BALI%20transparent.png" align="left" width="115"/> 
 
 # BALI - Benchmark for Accelerated <br> Language Model Inference
 
@@ -6,11 +6,9 @@ BALI is an Open-source Benchmark to compare LLM Inference Frameworks.
 It allows a gine grained configuration of the inference, tailored to application needs.
 
 ## BALI Pipeline
-
 ![Overview of BALI Pipeline](grafics/BALI%20pipeline_morefancy.png)
 
 ## List of included Acceleration Frameworks
-
 |Framework|Link|
 |----|----|
 |VLLM|https://docs.vllm.ai/en/latest/|
@@ -19,88 +17,108 @@ It allows a gine grained configuration of the inference, tailored to application
 |OpenLLM|https://github.com/bentoml/OpenLLM|
 |DeepSpeed|https://github.com/microsoft/DeepSpeed-MII|
 
-## Installation
 
+## Installation
 ```bash
 source setup_cuda121_torch212.sh
 source env_cuda121_torch212.sh
 ```
 
+
 ## Usage
-
 BALI can be used via a JSON config file, defining the intented parameters:
-
 ```bash
 source pyenv_inferbench/bin/activate
-python inferbench.py --config-file 'configs/example-gpt2.json'
+python inferbench.py --config-file 'configs/template.json'
 ```
-
 Additionally, all parameters are available via the command line interface:
-
 ```bash
-python inferbench.py --model-name 'gpt2' --data  'data/prompts.txt' --batch-size 1 --input_len 100 --output-len 100
+python inferbench.py --model-name 'gpt2' --data  'data/prompts.txt' --batch-size 1 --input_len 100 --output-len 100 
 ```
-
-Note that the config file is read and overwritten by the command line arguments.
+Note, that the config is read and overwritten by the command line arguments.
 
 For Convenience, you might use `benchmark_jobs_spawner.sh` that will launch a wave of Slurm jobs, one for each model x input_size x output_size configuration, using `template.json` as base for configuration.
 
 ### Parameters
+```
+  --model-name                  LLM to use for Benchmark run
+  --tokenizer                   Tokenizer to use, default is same as model
+  --frameworks                  List of Inference accelerations frameworks to measure performance
+  --data                        Path to the prompts text file
+  --output-dir                  Results directory
+  --config_file                 Config file for running the benchmark.
+  --save-slurm-config           Save SLURM environment variables
+  --loglevel                    Provide logging level, default is info. Use debug for detailed log
+  --input-len                   Sequence len per sample
+  --output-len                  Sequence length to generate per prompt
+  --dtype                       Inference data type
+  --warm-up-reps                Warm up repetitions of benchmark per framework
+  --repeats                     Repetitions of inference benchmark per framework
+  --num-gpus                    Number of GPUs to use for benchmark
+  --batch-size                  Batch Size for prompts
+  --generate-from-token         BALI setting, measures inference speed from token ids with fixed input length
+  --num-samples                 Amount of Prompts to sample from data
+  --tokenizer-init-config       Config Dictionary to initialize the tokenizer
+  --tokenize-config             Config Dictionary for tokenize function parameters
+  --compression-config          Prompt Compression Configuration for LLMLingua
+```
+## JumpLM - Benchmarking LLMs in Jupyter
 
+JumpLM is combined Tool from [JUmPER](https://github.com/ScaDS/jumper_ipython_extension/tree/bali-hook#) and BALI
+for joint LLM benchmarking and hardware performance monitoring.
+![Overview of JumpLM Interface](grafics/visualization_interface_jumpLM(1).png)
+### Setup
+1. Install BALI, see [Installation](#installation)
+2. Install [JUmPER](https://github.com/ScaDS/jumper_ipython_extension/tree/bali-hook#) extension
 ```bash
-# Model loading parameters
---model-name             # Path or huggingface-directory of the model to benchmark
---tokenizer              # Tokenizer to use, default is same as model
---tokenizer-init-config  # Configuration dict holding tokenizer initialization parameters
---trust-remote-code      # Whether to trust remote code for models/tokenizers that would require it
+git clone git@github.com:ScaDS/jumper_ipython_extension.git
+cd jumper_ipython_extension 
+git switch bali-hook
+pip install .
+```
+3. Install dependencies
+```bash
+pip install ipywidgets ipympl iypkernel
+```
+4. If needed, build kernel from virtual env via
+```bash
+python -m ipykernel install --prefix $BALI_REPO/BALI/pyenv_inferbench_cuda126_torch260 --display-name jumpLM-kernel
+```
+5. Launch Notebook, the following command should be available using the kernel:
 
-# Benchmark configuration
---frameworks             # Inference frameworks to benchmark. Select form
-                         #   hf_accelerate, vllm, vllm_async, llmlingua, openllm, deepspeed
---tokenize-config        # Config Dictionary for tokenize function parameters
---data                   # Path to the prompts text file
---num-samples            # Amount of Prompts to sample from data
---batch-size             # Batch Size for prompts
---input-len              # Number of input tokens per sample
---output-len             # Number of tokens to generate per sample
---dtype                  # Model data type. Select from available torch datatypes
-                         #   like float32, bfloat16
---warm-up-reps           # Warm up repetitions per framework
---repeats                # Repetitions of inference benchmark per framework
---num-gpus               # Number of GPUs to use for benchmark
---generate-from-token    # BALI setting, measures inference speed from token ids with fixed
-                         #   input length
+### Usage in Jupyter Notebook
+JumpLM is available through a variety of cell magics.
 
-# File I/O: config, results, loglevel
---output-dir             # Results directory
---config-file            # Config file for running the benchmark.
---save-slurm-config      # Save SLURM environment variables
---loglevel               # Provide logging level, default is info. Use debug for detailed log
-
-# Inference framework specific parameters
---compression-config     # Prompt Compression Configuration for LLMLingua
---open-llm-backend       # Backend used for OpenLLM Framework
+1. Load Extensions and start performance monitor
+```jupyter
+%reload_ext jumper_extension
+%reload_ext bali
+%perfmonitor_start
 ```
 
-## Outputs
-
-Benchmark results are placed in the output directory specified using `--output-dir`. It contains the following files:
-
+2. Set your inference config
+```jupyter
+%%bali_config
+model_name: facebook/opt-1.3b 
+frameworks: hf_accelerate
+batch_size: 128
+input_len: 32
+output_len: 32
+warm_up_reps: 0
+repeats: 1
 ```
-benchmark_results.json
-benchmark_summary.csv
-config.json
-```
+3. Show BALI config via `%bali_config_show`
+3. run BALI via `%bali_run`
+4. Plot inference speed heatmaps via  `%bali_plot`
+5. Start JUmPER Performance Visualization: `%perfmonitor_plot`
 
-The measured quantities for each run are contained by `benchmark_results.json` with individual entries for each framework and each repetition, excluding warm-up runs. Statistically processed results are in the corresponding `benchmarks_summary.csv` file, and the run configuration is saved in `config.json`. Additionally, the `hf_accelerate` framework supports collection of individual token latencies. If the framework is selected and `--token-latencies` is set, the per-token latencies are added to the `hf_accelerate` entry in `benchmark_results.json` and represent prefill (first token) and decoding (remaining tokens) execution times. They are also processed as a bar graph in an additional `token-timings-hf_accelerate.png` file. Other frameworks don't currently support token timings and don't emit this data. Capturing token latencies can incur a 3% performance overhead for small problem sizes.
 
 ## Citation
-
 ```
 @ARTICLE{jurkschat2025bali,
   author={Jurkschat, Lena and Gattogi, Preetam and Vahdati, Sahar and Lehmann, Jens},
-  journal={IEEE Access},
-  title={BALI—A Benchmark for Accelerated Language Model Inference},
+  journal={IEEE Access}, 
+  title={BALI—A Benchmark for Accelerated Language Model Inference}, 
   year={2025},
   volume={13},
   pages={98976-98989},
