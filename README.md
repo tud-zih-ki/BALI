@@ -66,7 +66,7 @@ For Convenience, you might use `benchmark_jobs_spawner.sh` that will launch a wa
 
 JumpLM is combined Tool from [JUmPER](https://github.com/ScaDS/jumper_ipython_extension/tree/bali-hook#) and BALI
 for joint LLM benchmarking and hardware performance monitoring.
-![Overview of JumpLM Interface](grafics/JumpLM-screenshot.png)
+![Overview of JumpLM Interface](grafics/visualization_interface_jumpLM(1).png)
 ### Setup
 1. Install BALI, see [Installation](#installation)
 2. Install [JUmPER](https://github.com/ScaDS/jumper_ipython_extension/tree/bali-hook#) extension
