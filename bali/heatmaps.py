@@ -10,7 +10,7 @@ from collections import defaultdict
 
 def custom_colormap():
     """Create custom colormap from hex colors."""
-    hex_colors = ['#EADFB4', '#9BB0C1', '#F6995C', '#874C62']
+    hex_colors = ['#51829B','#9BB0C1','#F6995C']
     rgb = [mpl.colors.to_rgb(c) for c in hex_colors]
     return mpl.colors.LinearSegmentedColormap.from_list('custom_cmap', rgb)
 
