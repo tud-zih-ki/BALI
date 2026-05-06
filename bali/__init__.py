@@ -35,7 +35,7 @@ __all__ = [
 # Package metadata
 __title__ = "bali"
 __description__ = "Benchmark for Accelerated Language Model Inference"
-__url__ = "https://github.com/your-org/bali"
+__url__ = "https://github.com/tud-zih-ki/BALI"
 __email__ = ""
 
 # IPython extension support
