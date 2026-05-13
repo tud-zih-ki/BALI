@@ -183,7 +183,7 @@ JumpLM is available through a variety of cell magics.
 ```python
 %reload_ext jumper_extension
 %reload_ext bali
-%perfmonitor_start
+%perfmonitor_start --monitor thread_bali
 ```
 
 ### Configure Benchmark
