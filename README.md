@@ -78,7 +78,7 @@ pip install .
 ```
 3. Install dependencies
 ```bash
-pip install ipywidgets ipympl iypkernel
+pip install ipywidgets ipympl ipykernel pynvml
 ```
 4. If needed, build kernel from virtual env via
 ```bash
