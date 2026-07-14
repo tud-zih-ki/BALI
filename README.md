@@ -76,6 +76,7 @@ For Convenience, you might use `benchmark_jobs_spawner.sh` that will launch a wa
 --config-file            # Config file for running the benchmark.
 --save-slurm-config      # Save SLURM environment variables
 --loglevel               # Provide logging level, default is info. Use debug for detailed log
+--gpu_sampling           # Record GPU metrics using ['nvml']
 
 # Inference framework specific parameters
 --compression-config     # Prompt Compression Configuration for LLMLingua

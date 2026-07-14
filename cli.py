@@ -58,6 +58,8 @@ def arguments(parser):
                         help="Save SLURM environment variables")
     parser.add_argument("--loglevel", default='info',
                         help="Provide logging level, default is info. Use debug for detailed log")
+    parser.add_argument("--gpu_sampling", type=str, default = "",
+                        help="Sample GPU hardware parameters using pynvml")
 
     # Inference framework specific parameters
     parser.add_argument("--token-latencies", action="store_true",
