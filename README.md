@@ -113,6 +113,7 @@ using `template.json` as the base configuration.
 | `--output-dir` | Directory for benchmark results |
 | `--config-file` | JSON configuration file |
 | `--save-slurm-config` | Save SLURM environment variables |
+| `--gpu_sampling` | Record GPU metrics using ['nvml'] |
 | `--loglevel` | Logging level (`info`, `debug`, etc.) |
 | `--input-len` | Input sequence length |
 | `--output-len` | Generated output sequence length |
@@ -126,7 +127,6 @@ using `template.json` as the base configuration.
 | `--tokenizer-init-config` | Tokenizer initialization configuration |
 | `--tokenize-config` | Tokenization configuration |
 | `--compression-config` | LLMLingua compression configuration |
-
 ---
 
 # JumpLM

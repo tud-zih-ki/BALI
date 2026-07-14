@@ -22,6 +22,8 @@ from tqdm import tqdm
 from .acceleration_frameworks import frameworks_available
 from .cli import get_parser
 
+from gpu_metrics import GPUSamplingHandler
+
 
 class InferBench:
     def __init__(self, parser: ArgumentParser):
@@ -62,6 +64,15 @@ class InferBench:
             logging.info("Logging in to Huggingface Hub")
             login(token=self.config['hf_login_token'])
 
+        self.gpu_metric_sampler = None
+        if 'gpu_sampling' in self.config.keys():
+             if self.config['gpu_sampling'] in ["nvml"]: # TODO only check in backend
+                logging.info(f"Initialising GPU sampling with {self.config['gpu_sampling']}")
+                self.gpu_metric_sampler = GPUSamplingHandler(self.config['gpu_sampling'])
+                self.gpu_metric_sampler.spawn()
+             else:
+                 logging.warning(f"Config 'gpu_sampling' is set to {self.config['gpu_sampling']} which is unsupported. Skipping 'gpu_sampling'")
+
         logging.info('Starting Benchmark...')
 
         self.save_configs()
@@ -94,6 +105,9 @@ class InferBench:
                     logging.info(
                         f'total time to run warm up repetition for {framework}: {result["total_time"]}s')
 
+                if self.gpu_metric_sampler:
+                    logging.info("Starting GPU sampling")
+                    self.gpu_metric_sampler.start_measurement()
                 logging.info("Starting actual benchmark...")
                 for r in tqdm(range(self.config["repeats"]), desc='Repeat', colour='CYAN'):
                     data = self.prepare_data()
@@ -101,12 +115,21 @@ class InferBench:
                     logging.info(f'total time to run Benchmark {framework}: {result["total_time"]}s')
                     result_dict[framework][r] = result
                     self.clean_gpu_memory()
+                if self.gpu_metric_sampler:
+                    logging.info("Stopping GPU sampling")
+                    gpu_values = self.gpu_metric_sampler.stop_measurement()
+                    gpu_out_file = f'{self.config["output_dir"]}/gpu_metrics.csv'
+                    pd.DataFrame(gpu_values).to_csv(gpu_out_file, mode="a", header=not os.path.exists(gpu_out_file), index=False)
             except Exception as e:
                 logging.error(
                     f'Error for Framework {framework} or different error occured! Choose from the following frameworks: '
                     f"{list(frameworks_available.keys())}.\nError was: {e}")
                 tb = traceback.format_exc()
                 print(tb)
+                if self.gpu_metric_sampler:
+                    self.gpu_metric_sampler.stop_measurement()
+        if self.gpu_metric_sampler:
+            self.gpu_metric_sampler.close()
 
         self.evaluate_results(result_dict)
         self.save_results(result_dict)
