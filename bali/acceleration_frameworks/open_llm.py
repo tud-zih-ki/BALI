@@ -2,10 +2,10 @@ import asyncio
 import logging
 from itertools import chain
 
-import acceleration_frameworks.openLLM as openLLM
+import openllm
 from transformers import AutoTokenizer
 
-from acceleration_frameworks.acceleration_framework import AccelerationFramework
+from .acceleration_framework import AccelerationFramework
 
 batch_size = 1
 

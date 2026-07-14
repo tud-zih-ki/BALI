@@ -4,7 +4,7 @@ import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 from transformers.generation import BaseStreamer
 
-from acceleration_frameworks.acceleration_framework import AccelerationFramework
+from .acceleration_framework import AccelerationFramework
 
 class TimerStreamer(BaseStreamer):
     def __init__(self, timer):

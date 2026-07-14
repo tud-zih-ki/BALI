@@ -7,7 +7,7 @@ _FRAMEWORK_SPECS = [
     ("vllm", ".vllm", "VLLM"),
     ("vllm_async", ".vllm_async", "VLLM_Async"),
     ("llmlingua", ".llm_lingua", "LLMLingua"),
-    ("openllm", ".openLLM", "OpenLLM"),
+    ("openllm", ".open_llm", "OpenLLM"),
     ("deepspeed", ".deepspeed_mii", "Deepspeed"),
 ]
 

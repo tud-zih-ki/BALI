@@ -1,0 +1,42 @@
+{
+  "model_name": ["MiniLLM/MiniPLM-Qwen-500M"],
+  "data": "data/prompts.txt",
+  "frameworks": [
+    "deepspeed",
+    "hf_accelerate",
+    "llmlingua",
+    "vllm",
+    "vllm_async"
+  ],
+  "repeats": 1,
+  "warm_up_reps": 0,
+  "batch_size": [1],
+  "num_samples": 1024,
+  "num_gpus": 1,
+  "input_len": [1, 2, 4, 8],
+  "output_len": [1, 2, 4, 8],
+  "generate_from_token": true,
+  "dtype": "float16",
+  "tokenizer_init_config": {
+    "padding": "max_length",
+    "padding_side": "left",
+    "truncation": "only_first"
+  },
+  "tokenize_config": {
+    "return_tensors": "pt",
+    "padding": "max_length",
+    "truncation": true
+  },
+  "generation_config": {
+    "do_sample": true,
+    "max_token": 100,
+    "max_new_tokens": 100
+  },
+  "output_dir": "",
+  "save_slurm_config": false,
+  "config_file": "config.json",
+  "compression_config": {
+    "model": "",
+    "rate": 0.5
+  }
+}  
