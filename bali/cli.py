@@ -70,3 +70,20 @@ def arguments(parser):
                         help="Backend used for OpenLLM Framework")
 
     return parser
+
+
+def main():
+    """Main entry point for the BALI CLI."""
+    try:
+        from .inferbench import InferBench
+    except ImportError:
+        # Fallback for when running as script
+        from inferbench import InferBench
+    
+    parser = get_parser()
+    benchmark = InferBench(parser)
+    benchmark.run_inference_benchmark()
+
+
+if __name__ == "__main__":
+    main()

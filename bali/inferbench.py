@@ -19,8 +19,8 @@ from huggingface_hub import login
 from tabulate import tabulate
 from tqdm import tqdm
 
-from acceleration_frameworks import frameworks_available
-from cli import get_parser
+from .acceleration_frameworks import frameworks_available
+from .cli import get_parser
 
 from gpu_metrics import GPUSamplingHandler
 
