@@ -93,6 +93,7 @@ class InferBench:
                     f"Available frameworks: {list(frameworks_available.keys())}")
                 continue
 
+
             logging.info(f"Running acceleration framework {framework}…")
             result_dict[framework] = {}
 
@@ -113,6 +114,7 @@ class InferBench:
                 for r in tqdm(range(self.config["repeats"]), desc='Repeat', colour='CYAN'):
                     data = self.prepare_data()
                     result = self.single_framework_run(framework, data)
+
                     logging.info(f'total time to run Benchmark {framework}: {result["total_time"]}s')
                     result_dict[framework][r] = result
                     self.clean_gpu_memory()
