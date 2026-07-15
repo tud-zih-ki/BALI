@@ -49,8 +49,8 @@ BALI is designed for researchers and practitioners who want reproducible and con
 ### Environment Setup
 
 ```bash
-source setup_cuda126_torch260.sh
-source env_cuda126_torch260.sh
+source hpc/setup_cuda126_torch260.sh
+source hpc/env_cuda126_torch260.sh
 ```
 
 ---
