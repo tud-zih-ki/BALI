@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import json
 import logging
+import os
 from transformers import AutoConfig
 
 # Complexity of the Residual Stream matrix addidion
@@ -127,6 +129,12 @@ class FlopCounter():
         self.params = None
         self.flops = None
 
+        if self.runconfig["flopcount_config"] is None or \
+            self.runconfig["flopcount_config"] == "" or \
+            not os.path.isfile(self.runconfig["flopcount_config"]):
+
+            raise ValueError("Specified FLOP-count config file could not be found!")
+
         self.fill_params()
 
     def parse_config(self, config, key):
@@ -217,6 +225,12 @@ class FlopCounter():
 
         return params
 
+    def load_params_from_flopcount_config(self, flopcount_config):
+        try:
+            return json.load(flopcount_config)
+        except:
+            logging.error("Couldn't load FLOP-count config!")
+
     def get_params_for_known_models(self, modelpath):
         known_params = {"bert-base-uncased": {
                             "d_embed": 768, "d_ffn": 3072, "ln_bias": True, "attn_bias": True, "mlp_bias": True,
@@ -250,6 +264,9 @@ class FlopCounter():
         # 1. See if the model is known and if so, return its parameters.
         # 2. If not, then load the model config and parse as many parameters as possible
         # 3. Attempt to infer missing data from parsed fields
+
+        self.params = self.load_params_from_flopcount_config(self.runconfig["flopcount_config"])
+        return
 
         # Step 1
         got_updated, params = self.get_params_for_known_models(self.runconfig["model_name"])

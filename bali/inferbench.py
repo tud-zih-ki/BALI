@@ -76,7 +76,16 @@ class InferBench:
         logging.info('Starting Benchmark...')
 
         self.save_configs()
-        self.flops = FlopCounter(self.config)
+        if "flopcounter_config" in self.config.keys():
+            try:
+                self.flops = FlopCounter(self.config)
+            except ValueError as e:
+                logging.warning("Error setting up FLOP-count module: ", e)
+                logging.info("Disabling FLOP-count module")
+                self.flops = None
+        
+        else:
+            self.flops = None
 
     def run_inference_benchmark(self) -> None:
         """
@@ -196,14 +205,14 @@ class InferBench:
             result_dict[framework]["decode_times_median"] = decode_times[framework]
 
         logging.info(
-            f"RESULTS\n{tabulate(res[['total_time_avg', 'total_gflops_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
+            f"RESULTS\n{tabulate(res[['total_time_avg', 'total_flops_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
 
         res_path = os.path.join(self.config['output_dir'], 'benchmark_summary.csv')
         res.to_csv(res_path)
         logging.info(f"Saved Benchmark summary to {res_path}")
 
     def plot_token_times(self, token_timestamps):
-        # FIXME these statistics should probably be calculated elsewhere. for now it's easiest to get them here
+        # TODO these statistics should probably be calculated elsewhere. for now it's easiest to get them here
         prefill_times = {}
         decode_times = {}
 
@@ -216,7 +225,7 @@ class InferBench:
             # turn timestamps into latencies
             token_timestamps[framework] = list(token_timestamps[framework])
             for idx, t in enumerate(token_timestamps[framework]):
-                # FIXME this is to accomodate for hf-accelerate emitting the prompt as the first token
+                # TODO this is to accomodate for hf-accelerate emitting the prompt as the first token
                 t = np.delete(t, 1)
                 token_timestamps[framework][idx] = [t[i + 1] - t[i] for i in range(len(t) - 1)]
 
@@ -231,28 +240,41 @@ class InferBench:
             medians = [np.median(t) for t in token_timestamps[framework]]
             lows = [medians[i] - np.percentile(t, 5) for i, t in enumerate(token_timestamps[framework])]
             highs = [np.percentile(t, 95) - medians[i] for i, t in enumerate(token_timestamps[framework])]
-            tflops = [f * self.config["batch_size"] / (a * 1e12 * self.config["num_samples"]) for f, a in zip(self.flops.get_flops(), medians)]
+
+            if self.flops is not None:
+                tflops = [f * self.config["batch_size"] / (a * 1e12 * self.config["num_samples"]) for f, a in zip(self.flops.get_flops(), medians)]
+
             colors = ["indigo", "orange"]
             patches = []
             fig, ax1 = plt.subplots(figsize=(10, 4))
-            ax2 = ax1.twinx()
+
+            if self.flops is not None:
+                ax2 = ax1.twinx()
 
             if len(xs) > 100:
                 ax1.bar(xs, medians, yerr=(lows, highs), color=colors[0], width=1.001)
-                ax2.scatter(xs, tflops, color=colors[1], s=3)
+                if self.flops is not None:
+                    ax2.scatter(xs, tflops, color=colors[1], s=3)
             else:
                 ax1.bar(xs, medians, yerr=(lows, highs), color=colors[0])
-                ax2.scatter(xs, tflops, color=colors[1])
+                if self.flops is not None:
+                    ax2.scatter(xs, tflops, color=colors[1])
+
             patches.append(Patch(color=colors[0], label=f"Batch Latencies"))
-            patches.append(Patch(color=colors[1], label=f"Compute Throughput"))
-            fig.legend(ncols=2, loc="outside upper center", handles=patches, frameon=False)
+
+            if self.flops is not None:
+                patches.append(Patch(color=colors[1], label=f"Compute Throughput"))
+
+            fig.legend(ncols=1 + int(self.flops is not None), loc="outside upper center", handles=patches, frameon=False)
 
             ax1.set_xlim(-0.5, max(0.5, max(xs) - 0.5))
             ax1.set_ylim(0, None)
-            ax2.set_ylim(0, None)
+            if self.flops is not None:
+                ax2.set_ylim(0, None)
             ax1.set_ylabel("Batch latency [s]", fontsize=14)
             ax1.set_xlabel("Output token ID", fontsize=14)
-            ax2.set_ylabel("Compute [TFLOPS]", fontsize=14)
+            if self.flops is not None:
+                ax2.set_ylabel("Compute [TFLOPS]", fontsize=14)
             plt.subplots_adjust(left=None, bottom=0.15, right=None, top=0.88)
             plt.savefig(os.path.join(self.config["output_dir"], f"token-timings-{framework}.png"), dpi=500)
             plt.close()

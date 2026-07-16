@@ -1,0 +1,14 @@
+{
+    "d_embed": 768,
+    "d_ffn": 3072,
+    "ln_bias": true,
+    "attn_bias": true,
+    "mlp_bias": true,
+    "activation": "gelu",
+    "n_head": 12,
+    "n_kvhead": 12,
+    "n_vocab": 30522,
+    "n_layer": 12,
+    "kvcache": false,
+    "type": "encoder"
+}

@@ -51,11 +51,14 @@ class AccelerationFramework():
             assert outputs.shape[1] == self.config[
                 'output_len'], f"Output length {outputs.shape[1]} of framework {self.__class__.__name__} does not match the configs output length!"
 
-        self.flops.calc_complexity()
-        print(f"Achieved GFLOPS: {1e-9 * self.flops.get_total_flops() / self.timer.generation_time():.2f}")
+        achieved_flops = None
+        if self.flops is not None:
+            self.flops.calc_complexity()
+            achieved_flops = self.flops.get_total_flops() / self.timer.generation_time()
+            print(f"Achieved GFLOPS: {1e-9 * achieved_flops:.2f}")
 
         return {'total_time': self.timer.total_prediction_time(),
-                'total_gflops' : 1e-9 * self.flops.get_total_flops() / self.timer.generation_time(),
+                'total_flops' : achieved_flops,
                 'output_shape': outputs.shape,
                 'batch_size': self.config['batch_size'],
                 'generate_from_token': self.generate_from_token,

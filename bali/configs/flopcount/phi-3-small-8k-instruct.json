@@ -1,0 +1,14 @@
+{
+    "d_embed": 4096,
+    "d_ffn": 14336,
+    "ln_bias": true,
+    "attn_bias": true,
+    "mlp_bias": true,
+    "activation": "geglu",
+    "n_head": 32,
+    "n_kvhead": 8,
+    "n_vocab": 100352,
+    "n_layer": 32,
+    "kvcache": true,
+    "type": "decoder"
+}

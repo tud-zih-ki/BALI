@@ -48,6 +48,7 @@ def arguments(parser):
                         help="BALI setting, measures inference speed from token ids with fixed input length")
     parser.add_argument("--random-tokens", action="store_true",
                         help="Uses randomly generated token ids instead of a tokenized dataset")
+    parser.add_argument("--flopcount-config", type=str, help="Enable FLOP count module and initialize model parameters with the provided config")
 
     # File I/O: config, results, loglevel
     parser.add_argument("--output-dir", type=str, default="../results/example",
