@@ -127,8 +127,29 @@ using `template.json` as the base configuration.
 | `--tokenizer-init-config` | Tokenizer initialization configuration |
 | `--tokenize-config` | Tokenization configuration |
 | `--compression-config` | LLMLingua compression configuration |
----
+|`--flopcount-config` | Enable FLOP count module and initialize model parameters with the provided config |
 
+
+#### FLOP Count Config
+To enable the FLOP counter, a JSON config file including the following information must be given to `--flopcount-config`:
+```python
+#gpt2
+{
+    "d_embed": 768,
+    "d_ffn": 3072,
+    "ln_bias": true,
+    "attn_bias": true,
+    "mlp_bias": true,
+    "activation": "gelu",
+    "n_head": 12,
+    "n_kvhead": 12,
+    "n_vocab": 50257,
+    "n_layer": 12,
+    "kvcache": true,
+    "type": "decoder"
+}
+```
+---
 # JumpLM
 
 JumpLM combines:
