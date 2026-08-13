@@ -19,10 +19,9 @@ from huggingface_hub import login
 from tabulate import tabulate
 from tqdm import tqdm
 
-from .acceleration_frameworks import frameworks_available
-from .cli import get_parser
-
-from gpu_metrics import GPUSamplingHandler
+from bali.acceleration_frameworks import frameworks_available
+from bali.cli import get_parser
+from bali.gpu_metrics import GPUSamplingHandler
 
 
 class InferBench:

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-source env_cuda126_torch260.sh
-python -m venv $BALI_REPO/pyenv_inferbench_cuda126_torch260
-source $BALI_REPO/pyenv_inferbench_cuda126_torch260/bin/activate
+source env_cuda124_torch260.sh
+python -m venv $BALI_REPO/pyenv_inferbench_cuda124_torch260
+source $BALI_REPO/pyenv_inferbench_cuda124_torch260/bin/activate
 
-pip install --upgrade pip setuptools
+pip install --upgrade pip setuptools packaging
 
-# Core PyTorch 2.6.0 on CUDA 12.6
-pip install torch==2.6.0
+# Core PyTorch 2.4.0 on CUDA 12.4
+pip install torch==2.6.0  https://download.pytorch.org/whl/cu124 
 
 # Basic ML Dependencies with precise versions
 pip install numpy==1.26.4 transformers==4.50.3 sentencepiece==0.2.0 tqdm==4.67.1
@@ -22,13 +22,13 @@ pip install --no-build-isolation llmlingua==0.2.2 accelerate==1.6.0
 pip install ninja==1.11.1.4 packaging==24.2
 
 # Flash Attention
-pip install --no-build-isolation flash-attn==2.7.4.post1
+#pip install --no-build-isolation flash-attn==2.7.4.post1
 
 # Utilities
 pip install pandas tabulate
 
 # FlashInfer
-pip install flashinfer-python -i https://flashinfer.ai/whl/cu126/torch2.6/
+pip install flashinfer-python -i https://flashinfer.ai/whl/cu124/torch2.6/
 
 # DeepSpeed
 pip install --no-build-isolation deepspeed==0.16.5 deepspeed-mii==0.3.3

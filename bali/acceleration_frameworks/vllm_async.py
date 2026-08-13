@@ -14,7 +14,7 @@ try:
 except ImportError:
     HAS_VLLM_INPUTS = False
 
-from .acceleration_framework import AccelerationFramework
+from bali.acceleration_frameworks.acceleration_framework import AccelerationFramework
 from vllm import SamplingParams
 from tqdm import tqdm
 

@@ -10,17 +10,17 @@ __author__ = "BALI Development Team"
 __license__ = "MIT"
 
 # Import main classes for easy access
-from .inferbench import InferBench
-from .cli import get_parser, main as cli_main
+from bali.inferbench import InferBench
+from bali.cli import get_parser, main as cli_main
 
 # Import acceleration frameworks for programmatic access
 try:
-    from .acceleration_frameworks import frameworks_available
+    from bali.acceleration_frameworks import frameworks_available
 except ImportError:
     frameworks_available = {}
 
 # Import utilities
-from .timer import InferenceTimer
+from bali.timer import InferenceTimer
 
 # Define what gets imported with "from bali import *"
 __all__ = [
@@ -41,10 +41,10 @@ __email__ = ""
 # IPython extension support
 def load_ipython_extension(ipython):
     """Load the BALI IPython extension."""
-    from .magics import load_ipython_extension as load_magics
+    from bali.magics import load_ipython_extension as load_magics
     load_magics(ipython)
 
 def unload_ipython_extension(ipython):
     """Unload the BALI IPython extension."""
-    from .magics import unload_ipython_extension as unload_magics
+    from bali.magics import unload_ipython_extension as unload_magics
     unload_magics(ipython)
