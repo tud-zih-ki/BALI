@@ -7,7 +7,7 @@ class InferenceTimer:
     def __init__(self):
         self.num_output_token = None
         self.start_time = None
-        self.absolute_start_time = None
+        self.absolute_start_time = None
         self.end_time = None
         self.setup_time = None
         self.tokenize_time = None

@@ -5,7 +5,7 @@ import tqdm
 from llmlingua import PromptCompressor
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
-from .acceleration_framework import AccelerationFramework
+from bali.acceleration_frameworks.acceleration_framework import AccelerationFramework
 
 
 class LLMLingua(AccelerationFramework):

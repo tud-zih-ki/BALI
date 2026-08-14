@@ -3,7 +3,7 @@ from itertools import chain
 
 import tqdm
 
-from .acceleration_framework import AccelerationFramework
+from bali.acceleration_frameworks.acceleration_framework import AccelerationFramework
 from vllm import LLM, SamplingParams
 
 
