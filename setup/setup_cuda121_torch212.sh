@@ -1,6 +1,25 @@
 #!/bin/bash
+CUDA_VER=121
+TORCH_VER=212
 
-source env_cuda121_torch212.sh
+current_path=$(pwd)
+base_dir="${current_path%%/BALI*}/BALI"
+
+if [[ "$current_path" != *"/BALI"* ]]; then
+    echo "Error: not inside a BALI directory" >&2
+    exit 1
+fi
+
+source $base_dir/setup/activate_pyenv.sh --quiet "$CUDA_VER" "$TORCH_VER"
+
+if [ "$_PYENV_ACTIVATE_OK" = "1" ]; then
+    echo "Env already exists and is activated: $VIRTUAL_ENV"
+    echo "Skipping setup."
+    return 0 2>/dev/null || exit 0
+fi
+
+echo "No existing env found for cuda${CUDA_VER}_torch${TORCH_VER}, proceeding with setup..."
+
 python -m venv $BALI_REPO/pyenv_inferbench_cuda121_torch212
 source $BALI_REPO/pyenv_inferbench_cuda121_torch212/bin/activate
 
