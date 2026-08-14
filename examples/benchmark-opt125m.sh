@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ..
-source setup/activate_pyenv.sh 124 260
+source setup/activate_pyenv.sh
 
 export HF_HOME=`pwd`/../huggingface
 export BENTOML_HOME=`pwd`/../bentoML

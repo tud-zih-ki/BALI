@@ -49,8 +49,18 @@ BALI is designed for researchers and practitioners who want reproducible and con
 ### Environment Setup
 
 ```bash
-source hpc/setup_cuda126_torch260.sh
-source hpc/env_cuda126_torch260.sh
+source setup/setup_cuda124_torch260.sh
+```
+The following setups are available:
+- CUDA 12.1 Torch 2.1.2 `setup_cuda121_torch212.sh`
+- CUDA 12.4 Torch 2.6   `setup/setup_cuda124_torch260.sh`
+- CUDA 13.0 Torch 2.13  `setup/setup_cuda130_torch213.sh`
+
+### (Re-) activate environment
+To activate the Python environment, there is a general activation script. In case multiple setup exists, the cuda and torch versions can be handed to the script (e.g. `124 260`). If not given, the newest setup will be chosen.
+
+```bash
+source setup/activate_pyenv.sh --cuda 124 --torch 260
 ```
 
 ---
@@ -60,8 +70,7 @@ source hpc/env_cuda126_torch260.sh
 ### Run Benchmark Using a JSON Configuration
 
 ```bash
-source pyenv_inferbench/bin/activate
-
+source setup/activate_pyenv.sh
 python inferbench.py \
   --config-file configs/template.json
 ```
@@ -86,7 +95,7 @@ python inferbench.py \
 For large-scale experiments, BALI provides the helper script:
 
 ```bash
-benchmark_jobs_spawner.sh
+examples/hpc/benchmark_jobs_spawner.sh
 ```
 
 The script automatically launches benchmark sweeps across:

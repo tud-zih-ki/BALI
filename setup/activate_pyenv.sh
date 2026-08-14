@@ -30,9 +30,24 @@ declare -A _PYENV_MODULE_MAP=(
 )
 
 
+_pyenv_echo_err() {
+    # respects --quiet: only prints to stderr if not quiet
+    [ "$_pyenv_quiet" -eq 1 ] && return 0
+    echo "$@" >&2
+}
+ 
+_pyenv_echo() {
+    # respects --quiet: only prints to stdout if not quiet
+    [ "$_pyenv_quiet" -eq 1 ] && return 0
+    echo "$@"
+}
+
+
+
 _pyenv_find_and_activate() {
     local cuda_want="" torch_want="" list_only=0
     local pattern="pyenv_inferbench_cuda"
+    _pyenv_quiet=0
     current_path=$(pwd)
 
     # --- arg parsing (supports flags or bare positional cuda/torch) -----
@@ -41,6 +56,7 @@ _pyenv_find_and_activate() {
             --cuda) cuda_want="$2"; shift 2 ;;
             --torch) torch_want="$2"; shift 2 ;;
             --list) list_only=1; shift ;;
+	    --quiet|-q) _pyenv_quiet=1; shift ;;
             --help|-h)
                 echo "Usage: source activate_pyenv.sh [--cuda VER] [--torch VER] [--list]"
                 echo "       source activate_pyenv.sh [CUDA_VER] [TORCH_VER]"
@@ -134,10 +150,12 @@ _pyenv_find_and_activate() {
 
     if [ "${#match_idx[@]}" -eq 0 ]; then
         echo "ERROR: no env matched cuda='${cuda_want:-any}' torch='${torch_want:-any}'." >&2
-        echo "Available envs:" >&2
-        for i in "${!names[@]}"; do
-            printf "  cuda%s_torch%s\n" "${cudas[$i]}" "${torches[$i]}" >&2
-        done
+        if [ "$_pyenv_quiet" -eq 0 ]; then
+		echo "Available envs:" >&2
+        	for i in "${!names[@]}"; do
+            		printf "  cuda%s_torch%s\n" "${cudas[$i]}" "${torches[$i]}" >&2
+        	done
+	fi
         return 1
     fi
 
@@ -207,4 +225,14 @@ _pyenv_find_and_activate() {
 }
 
 _pyenv_find_and_activate "$@"
-unset -f _pyenv_find_and_activate
+_PYENV_RC=$?
+
+if [ "$_PYENV_RC" -eq 0 ] && [ -n "$VIRTUAL_ENV" ]; then
+    export _PYENV_ACTIVATE_OK=1
+else
+    export _PYENV_ACTIVATE_OK=0
+fi
+
+unset -f _pyenv_find_and_activate _pyenv_echo _pyenv_echo_err
+unset _pyenv_quiet
+return "$_PYENV_RC" 2>/dev/null || exit "$_PYENV_RC"
