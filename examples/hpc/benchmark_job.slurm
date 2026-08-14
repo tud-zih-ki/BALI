@@ -2,11 +2,12 @@
 
 EXP_DIR=$1
 SOFTWARE_SETUP=$2
-export BALI_REPO=$(pwd)
+
+current_path=$(pwd)
+bali_dir="${current_path%%/BALI*}/BALI"
 
 # Use version-specific software setup
-source env_${SOFTWARE_SETUP}.sh
-PYENV_DIR="./pyenv_inferbench_${SOFTWARE_SETUP}"
+source $bali_dir/setup/activate_pyenv.sh $SOFTWARE_SETUP
 
 # Extract experiment info from directory structure
 # experiments_{cuda121_torch212|cuda126_torch260}/model_name/framework/input_size/output_size/
@@ -47,7 +48,6 @@ module list 2> "$EXP_DIR/metadata/loaded_modules.txt"
 
 # Python environment and package versions
 cd "$BALI_REPO"
-source "$PYENV_DIR/bin/activate"
 {
     echo "=== Python Version ==="
     python --version

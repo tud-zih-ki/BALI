@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ..
-source setup/env_cuda124_torch260.sh
+source setup/activate_pyenv.sh 124 260
 
 export HF_HOME=`pwd`/../huggingface
 export BENTOML_HOME=`pwd`/../bentoML
