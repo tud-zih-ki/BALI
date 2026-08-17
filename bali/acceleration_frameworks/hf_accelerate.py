@@ -20,8 +20,8 @@ class TimerStreamer(BaseStreamer):
         self.timer.time_token_final(end_timing=False)
 
 class HFAccelerate(AccelerationFramework):
-    def __init__(self, config, data, generate_from_token: bool = True, random_tokens = True):
-        super(HFAccelerate, self).__init__(config, data, generate_from_token, random_tokens)
+    def __init__(self, config, data, flops, generate_from_token: bool = True, random_tokens = True):
+        super(HFAccelerate, self).__init__(config, data, flops, generate_from_token, random_tokens)
 
     def tokenize_data(self):
         tokenized_batch = []

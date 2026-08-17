@@ -17,6 +17,7 @@
     "truncation": true,
     "return_token_type_ids": false
   },
+  "flopcount-config": "configs/flopcount/teuken-7b-instruct-research-v0.4.json",
   "data": "data/prompts.txt",
   "num_samples": 32,
   "batch_size": 1,

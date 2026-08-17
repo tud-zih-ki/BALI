@@ -22,6 +22,7 @@
     "truncation": true,
     "return_token_type_ids": null
   },
+  "flopcount-config": null,
   "data": "data/prompts.txt",
   "num_samples": 128,
   "batch_size": 1,

@@ -5,6 +5,7 @@ import json
 import logging
 import os.path
 import re
+import sys
 import traceback
 from argparse import ArgumentParser
 from datetime import datetime
@@ -22,6 +23,7 @@ from tqdm import tqdm
 from bali.acceleration_frameworks import frameworks_available
 from bali.cli import get_parser
 from bali.gpu_metrics import GPUSamplingHandler
+from bali.flops import FlopCounter
 
 
 class InferBench:
@@ -49,11 +51,11 @@ class InferBench:
 
         # set logger
         logging.basicConfig(filename=os.path.join(self.config['output_dir'], 'logs.txt'), filemode='a',
-                            encoding='utf-8', level=args.loglevel.upper(),
+                            encoding='utf-8', level=args.loglevel.upper(), force=True,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
         # Handler for stdout logging in addition
-        handler = logging.StreamHandler()
+        handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
@@ -75,6 +77,17 @@ class InferBench:
         logging.info('Starting Benchmark...')
 
         self.save_configs()
+        if "flopcount_config" in self.config.keys():
+            try:
+                self.flops = FlopCounter(self.config)
+                logging.info("Initialized FlopCounter Module")
+            except ValueError as e:
+                logging.warning("Error setting up FLOP-count module: ", e)
+                logging.info("Disabling FLOP-count module")
+                self.flops = None
+        
+        else:
+            self.flops = None
 
     def run_inference_benchmark(self) -> None:
         """
@@ -90,6 +103,7 @@ class InferBench:
                     f"Requested framework '{framework}' is not available in the current environment and will be skipped. "
                     f"Available frameworks: {list(frameworks_available.keys())}")
                 continue
+
 
             logging.info(f"Running acceleration framework {framework}…")
             result_dict[framework] = {}
@@ -111,6 +125,7 @@ class InferBench:
                 for r in tqdm(range(self.config["repeats"]), desc='Repeat', colour='CYAN'):
                     data = self.prepare_data()
                     result = self.single_framework_run(framework, data)
+
                     logging.info(f'total time to run Benchmark {framework}: {result["total_time"]}s')
                     result_dict[framework][r] = result
                     self.clean_gpu_memory()
@@ -134,7 +149,9 @@ class InferBench:
         self.save_results(result_dict)
 
     def prepare_data(self):
-        if self.config['data'] is not None:
+        if self.config["random_tokens"]:
+            return None
+        elif self.config['data'] is not None:
             with open(self.config['data'], 'r') as file:
                 samples = file.readlines()
         else:
@@ -153,20 +170,21 @@ class InferBench:
         return samples
 
     def single_framework_run(self, framework, data):
-        framework_instance = frameworks_available[framework](self.config, data, self.config['generate_from_token'], self.config['random_tokens'])
+        framework_instance = frameworks_available[framework](self.config, data, self.flops, self.config['generate_from_token'], self.config['random_tokens'])
         return framework_instance.forward()
 
     def evaluate_results(self, result_dict):
         # don't litter the results file with individual timestamps but plot them instead
         token_timestamps = {}
         for framework in result_dict:
-            token_timestamps[framework] = np.empty((0, len(result_dict[framework][0]["token_timestamps"][0])))
-            for iteration in result_dict[framework]:
-                # FIXME list can also be concatenated using []+[], maybe that's easier
-                token_timestamps[framework] = np.concatenate((
-                        token_timestamps[framework],
-                        np.array(result_dict[framework][iteration].pop("token_timestamps"))
-                ))
+            if len(result_dict[framework]) > 0:
+                token_timestamps[framework] = np.empty((0, len(result_dict[framework][0]["token_timestamps"][0])))
+                for iteration in result_dict[framework]:
+                    # FIXME list can also be concatenated using []+[], maybe that's easier
+                    token_timestamps[framework] = np.concatenate((
+                            token_timestamps[framework],
+                            np.array(result_dict[framework][iteration].pop("token_timestamps"))
+                    ))
         prefill_times, decode_times = self.plot_token_times(token_timestamps)
 
         df = pd.DataFrame(result_dict)
@@ -192,14 +210,16 @@ class InferBench:
             result_dict[framework]["decode_times_median"] = decode_times[framework]
 
         logging.info(
-            f"RESULTS\n{tabulate(res[['total_time_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
+            f"RESULTS\n{tabulate(res.filter("avg", axis=1), 
+                                 headers='keys', 
+                                 tablefmt='fancy_grid')}")
 
         res_path = os.path.join(self.config['output_dir'], 'benchmark_summary.csv')
         res.to_csv(res_path)
         logging.info(f"Saved Benchmark summary to {res_path}")
 
     def plot_token_times(self, token_timestamps):
-        # FIXME these statistics should probably be calculated elsewhere. for now it's easiest to get them here
+        # TODO these statistics should probably be calculated elsewhere. for now it's easiest to get them here
         prefill_times = {}
         decode_times = {}
 
@@ -212,7 +232,7 @@ class InferBench:
             # turn timestamps into latencies
             token_timestamps[framework] = list(token_timestamps[framework])
             for idx, t in enumerate(token_timestamps[framework]):
-                # FIXME this is to accomodate for hf-accelerate emitting the prompt as the first token
+                # TODO this is to accomodate for hf-accelerate emitting the prompt as the first token
                 t = np.delete(t, 1)
                 token_timestamps[framework][idx] = [t[i + 1] - t[i] for i in range(len(t) - 1)]
 
@@ -224,34 +244,44 @@ class InferBench:
                 decode_times[framework] = [np.median(t) for t in token_timestamps[framework][1:]]
 
             xs = list(range(len(token_timestamps[framework])))
-            # avgs = [np.average(t) for t in token_timestamps[framework]]
-            # flops = [f / a for f, a in zip(self.flops.get_flops(), avgs)]
-            # stdevs = [np.std(t) for t in token_timestamps[framework]]
-            # plt.bar(xs, avgs, yerr=stdevs)
-
-            # error bars could also represent min and max (which i think is more informative
-            #   but doesn't align with other benchmark errors)
-            #   (better yet, 10th and 90th percentiles to account for outliers, but i could not be bothered)
-
             medians = [np.median(t) for t in token_timestamps[framework]]
-            mins = [medians[i] - np.percentile(t, 5) for i, t in enumerate(token_timestamps[framework])]
-            maxs = [np.percentile(t, 95) - medians[i] for i, t in enumerate(token_timestamps[framework])]
+            lows = [medians[i] - np.percentile(t, 5) for i, t in enumerate(token_timestamps[framework])]
+            highs = [np.percentile(t, 95) - medians[i] for i, t in enumerate(token_timestamps[framework])]
+
+            if self.flops is not None:
+                tflops = [f * self.config["batch_size"] / (a * 1e12 * self.config["num_samples"]) for f, a in zip(self.flops.get_flops(), medians)]
+
             colors = ["indigo", "orange"]
             patches = []
-            fig, ax = plt.subplots(figsize=(10, 4))
+            fig, ax1 = plt.subplots(figsize=(10, 4))
+
+            if self.flops is not None:
+                ax2 = ax1.twinx()
 
             if len(xs) > 100:
-                ax.bar(xs, medians, yerr=(mins, maxs), color=colors[0], width=1.001)
+                ax1.bar(xs, medians, yerr=(lows, highs), color=colors[0], width=1.001)
+                if self.flops is not None:
+                    ax2.scatter(xs, tflops, color=colors[1], s=3)
             else:
-                ax.bar(xs, medians, yerr=(mins, maxs), color=colors[0])
-            patches.append(Patch(color=colors[0], label=f"Batch Latencies"))
-            fig.legend(ncols=1, loc="outside upper center", handles=patches, frameon=False)
+                ax1.bar(xs, medians, yerr=(lows, highs), color=colors[0])
+                if self.flops is not None:
+                    ax2.scatter(xs, tflops, color=colors[1])
 
-            ax.set_xlim(-0.5, max(0.5, max(xs) - 0.5))
-            ax.set_ylim(0, None)
-            ax.set_ylabel("Batch latency [s]", fontsize=14)
-            ax.set_xlabel("Output token ID", fontsize=14)
-            # plt.title(f"Batch latencies for {framework}")
+            patches.append(Patch(color=colors[0], label=f"Batch Latencies"))
+
+            if self.flops is not None:
+                patches.append(Patch(color=colors[1], label=f"Compute Throughput"))
+
+            fig.legend(ncols=1 + int(self.flops is not None), loc="outside upper center", handles=patches, frameon=False)
+
+            ax1.set_xlim(-0.5, max(0.5, max(xs) - 0.5))
+            ax1.set_ylim(0, None)
+            if self.flops is not None:
+                ax2.set_ylim(0, None)
+            ax1.set_ylabel("Batch latency [s]", fontsize=14)
+            ax1.set_xlabel("Output token ID", fontsize=14)
+            if self.flops is not None:
+                ax2.set_ylabel("Compute [TFLOPS]", fontsize=14)
             plt.subplots_adjust(left=None, bottom=0.15, right=None, top=0.88)
             plt.savefig(os.path.join(self.config["output_dir"], f"token-timings-{framework}.png"), dpi=500)
             plt.close()

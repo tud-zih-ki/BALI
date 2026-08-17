@@ -17,6 +17,7 @@
     "truncation": true,
     "return_token_type_ids": null
   },
+  "flopcount-config": "configs/flopcount/phi-3-small-8k-instruct.json",
   "data": "data/prompts.txt",
   "num_samples": 32,
   "batch_size": 1,

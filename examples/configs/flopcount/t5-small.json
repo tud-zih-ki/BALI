@@ -1,0 +1,14 @@
+{
+    "d_embed": 512,
+    "d_ffn": 2048,
+    "ln_bias": true,
+    "attn_bias": false,
+    "mlp_bias": false,
+    "activation": "relu",
+    "n_head": 8,
+    "n_kvhead": 8,
+    "n_vocab": 32128,
+    "n_layer": 12,
+    "kvcache": false,
+    "type": "encoder-decoder"
+}
