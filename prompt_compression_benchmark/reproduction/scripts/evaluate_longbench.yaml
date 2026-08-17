@@ -1,0 +1,40 @@
+results_dir: ../results/longbench
+
+models:
+  mistralai/Mistral-7B-v0.1:
+    out_dir: mistral7b_answer
+    # device: cuda:7
+    # tasks:
+    #   - multifieldqa_en
+    #   - multifieldqa_zh
+    #   - narrativeqa
+    #   - qasper
+  meta-llama/Meta-Llama-3.1-70B-Instruct:
+    out_dir: llama_3.1_70b_answer
+  CohereForAI/c4ai-command-r-plus:
+    out_dir: command_r_plus_answer
+  gpt-3.5-turbo-instruct:
+    out_dir: gpt35_answer
+  gpt-4o-2024-08-06:
+    out_dir: gpt_4o_answer
+  gpt-4o-mini-2024-07-18:
+    out_dir: gpt_4o_mini_answer
+
+scenarios:
+  - name: origin
+    load_from:
+      - longbench_test_formatted.json
+    load_key: context
+  - name: llmlingua2
+    load_from:
+      - compression_target3000_longbench_test_formatted.json
+      - compression_target2000_longbench_test_formatted.json
+    load_key: compressed_prompt
+  - name: llmlingua2_small
+    load_from:
+      - compression_target3000_longbench_test_formatted.json
+      - compression_target2000_longbench_test_formatted.json
+    load_key: compressed_prompt
+  - name: zero_shot
+    load_from:
+      - longbench_test_formatted.json

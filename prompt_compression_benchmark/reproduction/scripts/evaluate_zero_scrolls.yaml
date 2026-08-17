@@ -1,0 +1,37 @@
+results_dir: ../results/zero_scrolls
+
+models:
+  mistralai/Mistral-7B-v0.1:
+    out_dir: mistral7b_answer
+    device: cuda:6
+  meta-llama/Meta-Llama-3.1-70B-Instruct:
+    out_dir: llama_3.1_70b_answer
+    chat_model: true
+  CohereForAI/c4ai-command-r-plus:
+    out_dir: command_r_plus_answer
+    chat_model: true
+  gpt-3.5-turbo-instruct:
+    out_dir: gpt35_answer
+    chat_model: true
+  gpt-4o-2024-08-06:
+    out_dir: gpt_4o_answer
+    chat_model: true
+  gpt-4o-mini-2024-07-18:
+    out_dir: gpt_4o_mini_answer
+    chat_model: true
+
+scenarios:
+  - name: origin
+    load_from:
+      - zero_scrolls_validation.json
+    load_key: prompt
+  - name: llmlingua2
+    load_from:
+      - compression_target2000_zero_scrolls_validation.json
+      - compression_target3000_zero_scrolls_validation.json
+    load_key: compressed_prompt
+  - name: llmlingua2_small
+    load_from:
+      - compression_target2000_zero_scrolls_validation.json
+      - compression_target3000_zero_scrolls_validation.json
+    load_key: compressed_prompt
