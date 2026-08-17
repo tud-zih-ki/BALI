@@ -227,7 +227,7 @@ class FlopCounter():
 
     def load_params_from_flopcount_config(self, flopcount_config):
         try:
-            return json.load(flopcount_config)
+            return json.load(open(flopcount_config, "r"))
         except:
             logging.error("Couldn't load FLOP-count config!")
 

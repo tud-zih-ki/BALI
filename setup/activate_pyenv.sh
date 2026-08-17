@@ -185,6 +185,7 @@ _pyenv_find_and_activate() {
     export TRITON_CACHE_DIR="$cache_dir/triton"
     export BENTOML_HOME="$cache_dir/bentoml"
     export HF_HOME="$cache_dir/huggingface"
+    export FLASHINFER_WORKSPACE_BASE="$cache_dir/flashinfer"
     export TRANSFORMERS_CACHE="$cache_dir/huggingface"
      
     echo "Cache dir set: $cache_dir"

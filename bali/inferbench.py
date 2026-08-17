@@ -5,6 +5,7 @@ import json
 import logging
 import os.path
 import re
+import sys
 import traceback
 from argparse import ArgumentParser
 from datetime import datetime
@@ -50,11 +51,11 @@ class InferBench:
 
         # set logger
         logging.basicConfig(filename=os.path.join(self.config['output_dir'], 'logs.txt'), filemode='a',
-                            encoding='utf-8', level=args.loglevel.upper(),
+                            encoding='utf-8', level=args.loglevel.upper(), force=True,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
         # Handler for stdout logging in addition
-        handler = logging.StreamHandler()
+        handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
@@ -76,9 +77,10 @@ class InferBench:
         logging.info('Starting Benchmark...')
 
         self.save_configs()
-        if "flopcounter_config" in self.config.keys():
+        if "flopcount_config" in self.config.keys():
             try:
                 self.flops = FlopCounter(self.config)
+                logging.info("Initialized FlopCounter Module")
             except ValueError as e:
                 logging.warning("Error setting up FLOP-count module: ", e)
                 logging.info("Disabling FLOP-count module")
@@ -147,7 +149,9 @@ class InferBench:
         self.save_results(result_dict)
 
     def prepare_data(self):
-        if self.config['data'] is not None:
+        if self.config["random_tokens"]:
+            return None
+        elif self.config['data'] is not None:
             with open(self.config['data'], 'r') as file:
                 samples = file.readlines()
         else:
@@ -173,13 +177,14 @@ class InferBench:
         # don't litter the results file with individual timestamps but plot them instead
         token_timestamps = {}
         for framework in result_dict:
-            token_timestamps[framework] = np.empty((0, len(result_dict[framework][0]["token_timestamps"][0])))
-            for iteration in result_dict[framework]:
-                # FIXME list can also be concatenated using []+[], maybe that's easier
-                token_timestamps[framework] = np.concatenate((
-                        token_timestamps[framework],
-                        np.array(result_dict[framework][iteration].pop("token_timestamps"))
-                ))
+            if len(result_dict[framework]) > 0:
+                token_timestamps[framework] = np.empty((0, len(result_dict[framework][0]["token_timestamps"][0])))
+                for iteration in result_dict[framework]:
+                    # FIXME list can also be concatenated using []+[], maybe that's easier
+                    token_timestamps[framework] = np.concatenate((
+                            token_timestamps[framework],
+                            np.array(result_dict[framework][iteration].pop("token_timestamps"))
+                    ))
         prefill_times, decode_times = self.plot_token_times(token_timestamps)
 
         df = pd.DataFrame(result_dict)
@@ -205,7 +210,9 @@ class InferBench:
             result_dict[framework]["decode_times_median"] = decode_times[framework]
 
         logging.info(
-            f"RESULTS\n{tabulate(res[['total_time_avg', 'total_flops_avg', 'generation_time_avg', 'token_per_sec_avg', 'sequences/s_avg', 'setup_time_avg', 'tokenize_time_avg']], headers='keys', tablefmt='fancy_grid')}")
+            f"RESULTS\n{tabulate(res.filter("avg", axis=1), 
+                                 headers='keys', 
+                                 tablefmt='fancy_grid')}")
 
         res_path = os.path.join(self.config['output_dir'], 'benchmark_summary.csv')
         res.to_csv(res_path)
